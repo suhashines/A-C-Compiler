@@ -1,0 +1,11 @@
+<INT, int>
+<ID, main>
+<LPAREN, (>
+<RPAREN, )>
+<LCURL, {>
+<INT, int>
+<ID, a>
+<ASSIGNOP, =>
+<CONST_INT, 10>
+<SEMICOLON, ;>
+<RCURL, }>
