@@ -48,9 +48,6 @@ void logFileWriter(const string &left,const string &right){
 %left LCURL RCURL
 %left LPAREN RPAREN
 
-%right PREFIX_INCOP
-%left POSTFIX_INCOP
-
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
 
@@ -97,18 +94,18 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statem
  		;				
 
 
-parameter_list  : parameter_list COMMA type_specifier ID
-		| parameter_list COMMA type_specifier
- 		| type_specifier ID
-		| type_specifier
+parameter_list  : parameter_list COMMA type_specifier ID {logFileWriter("parameter_list","parameter_list COMMA type_specifier ID");}
+		| parameter_list COMMA type_specifier {logFileWriter("parameter_list","parameter_list COMMA type_specifier");}
+ 		| type_specifier ID {logFileWriter("parameter_list","type_specifier ID");}
+		| type_specifier {logFileWriter("parameter_list","type_specifier");}
  		;
 
  		
-compound_statement : LCURL statements RCURL
- 		    | LCURL RCURL
+compound_statement : LCURL statements RCURL {logFileWriter("compound_statement","LCURL statements RCURL");}
+ 		    | LCURL RCURL {logFileWriter("compound_statement","LCURL RCURL");}
  		    ;
  		    
-var_declaration : type_specifier declaration_list SEMICOLON
+var_declaration : type_specifier declaration_list SEMICOLON {logFileWriter("var_declaration","type_specifier declaration_list SEMICOLON");}
  		 ;
  		 
 type_specifier	: INT  {
@@ -122,57 +119,95 @@ type_specifier	: INT  {
 		}
  		;
  		
-declaration_list : declaration_list COMMA ID
- 		  | declaration_list COMMA ID LTHIRD CONST_INT RTHIRD
+declaration_list : declaration_list COMMA ID {
+	logFileWriter("declaration_list","declaration_list COMMA ID");
+}
+ 		  | declaration_list COMMA ID LTHIRD CONST_INT RTHIRD {
+			logFileWriter("declaration_list","declaration_list COMMA ID LTHIRD CONST_INT RTHIRD");
+		  }
  		  | ID {
 			logFileWriter("declaration_list","ID");
-			
-			
 			}
- 		  | ID LTHIRD CONST_INT RTHIRD
+ 		  | ID LTHIRD CONST_INT RTHIRD  {
+			logFileWriter("declaration_list","ID LTHIRD CONST_INT RTHIRD");
+		  }
  		  ;
  		  
-statements : statement
-	   | statements statement
+statements : statement {logFileWriter("statements","statement");}
+	   | statements statement {
+		logFileWriter("statements","statements statement");
+	   }
 	   ;
 	   
-statement : var_declaration
-	  | expression_statement
-	  | compound_statement
-	  | FOR LPAREN expression_statement expression_statement expression RPAREN statement
-	  | IF LPAREN expression RPAREN statement
-	  | IF LPAREN expression RPAREN statement ELSE statement
-	  | WHILE LPAREN expression RPAREN statement
-	  | PRINTLN LPAREN ID RPAREN SEMICOLON
-	  | RETURN expression SEMICOLON
+statement : var_declaration {
+	logFileWriter("statement","var_declaration");
+}
+	  | expression_statement {
+		logFileWriter("statement","expression_statement");
+	  }
+	  | compound_statement {
+		logFileWriter("statement","compound_statement");
+	  }
+	  | FOR LPAREN expression_statement expression_statement expression RPAREN statement {
+		logFileWriter("statement","FOR LPAREN expression_statement expression_statement expression RPAREN statement");
+	  }
+	  | IF LPAREN expression RPAREN statement {
+		logFileWriter("statement","IF LPAREN expression RPAREN statement");
+	  }
+	  | IF LPAREN expression RPAREN statement ELSE statement {
+		logFileWriter("statement","IF LAPAREN expression RPAREN statement ELSE statement");
+	  }
+	  | WHILE LPAREN expression RPAREN statement {
+		logFileWriter("statement","WHILE LPAREN expression RPAREN statement");
+	  }
+	  | PRINTLN LPAREN ID RPAREN SEMICOLON  {
+		logFileWriter("statement","PRINTLN LPAREN ID RPAREN SEMICOLON");
+	  }
+	  | RETURN expression SEMICOLON {
+		logFileWriter("statement","RETURN expression SEMICOLON");
+	  }
 	  ;
 	  
-expression_statement 	: SEMICOLON			
-			| expression SEMICOLON 
+expression_statement 	: SEMICOLON	{logFileWriter("expression_statement","SEMICOLON");}		
+			| expression SEMICOLON {logFileWriter("expression_statement","expression SEMICOLON");}
 			;
 	  
-variable : ID 		
-	 | ID LTHIRD expression RTHIRD 
+variable : ID {logFileWriter("variable","ID");}
+	 | ID LTHIRD expression RTHIRD {
+		logFileWriter("variable","ID LTHIRD expression RTHIRD");
+	 }
 	 ;
 	 
- expression : logic_expression	
-	   | variable ASSIGNOP logic_expression 	
+ expression : logic_expression	{logFileWriter("expression","logic_expression");}
+	   | variable ASSIGNOP logic_expression {
+		logFileWriter("expression","variable ASSIGNOP logic_expression");
+	   }	
 	   ;
 			
-logic_expression : rel_expression 	
-		 | rel_expression LOGICOP rel_expression 	
+logic_expression : rel_expression 	{
+	logFileWriter("logic_expression","rel_expression");
+}
+		 | rel_expression LOGICOP rel_expression {
+			logFileWriter("logic_expression","rel_expression LOGICOP rel_expression");
+		 }	
 		 ;
 			
-rel_expression	: simple_expression 
-		| simple_expression RELOP simple_expression	
+rel_expression	: simple_expression {
+	logFileWriter("rel_expression","simple_expression");
+}
+		| simple_expression RELOP simple_expression	{
+			logFileWriter("rel_expression","simple_expression RELOP simple_expression");
+		}
 		;
 				
-simple_expression : term 
-		  | simple_expression ADDOP term 
+simple_expression : term {logFileWriter("simple_expression","term");}
+		  | simple_expression ADDOP term {
+			logFileWriter("simple_expression","simple_expression ADDOP term");
+		  }
 		  ;
 					
-term :	unary_expression
-     |  term MULOP unary_expression
+term :	unary_expression {logFileWriter("term","unary_expression");}
+     |  term MULOP unary_expression {logFileWriter("term","term MULOP unary_expression");}
      ;
 
 unary_expression : ADDOP unary_expression {logFileWriter("unary_expression","ADDOP unary_expression");} 
