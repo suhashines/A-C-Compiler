@@ -16,7 +16,7 @@
 
 using namespace std;
 
-
+extern SymbolInfo* yylval ;
 
 int line = 1 ;
 int error = 0 ;
@@ -28,6 +28,8 @@ bool isMultiLineString = false;
 
 extern ofstream logFile;
 extern ofstream errorFile;
+
+
 ofstream tokenFile;
 
 string characterLiteral;
@@ -73,7 +75,7 @@ char extractChar(const string &charLiteral) {
 }
 
 
-void logFileWriter(const string &token,const string &lexeme){
+void lexLogWriter(const string &token,const string &lexeme){
    
        logFile<<"Line# "<<line<<": Token <"<<token<<"> Lexeme "<<lexeme<< " found"<<endl; 
     }
@@ -87,7 +89,7 @@ void errorWriter(const string &errorType,const string&lexeme){
     logFile<<"Error at line# "<<line<<": "<<errorType<<" "<<lexeme<<endl;
 }
 
-void logFileWriter(const string &token,const string &lexeme,int lineCount){
+void lexLogWriter(const string &token,const string &lexeme,int lineCount){
 
     logFile<<"Line# "<<lineCount<<": Token <"<<token<<"> Lexeme "<<lexeme<< " found"<<endl; 
 }
@@ -130,7 +132,8 @@ FLOAT       (({INT}("."{INT})?)|("."{INT}))(([eE][+-]?)?{INT})?
 ID          [a-zA-Z_][a-zA-Z0-9_]*
 ADDOP       [+-]
 MULOP       [*/%]
-INCOP       "++"|"--"
+INCOP       "++"
+DECOP        "--"
 RELOP       "<"|"<="|">"|">="|"=="|"!="
 ASSIGNOP    "="
 LOGICOP     "&&"|"||"
@@ -194,45 +197,45 @@ INVALID_ID_SUFFIX_NUM_PREFIX  {FLOAT}{ID}+
 
 {WHITESPACE}    { }
 
-if {logFileWriter(toUpper(yytext),yytext); return IF; }
-else {logFileWriter(toUpper(yytext),yytext); return ELSE;}
-for {logFileWriter(toUpper(yytext),yytext);return FOR;}
-while {logFileWriter(toUpper(yytext),yytext);return WHILE;}
-do {logFileWriter(toUpper(yytext),yytext);return DO;}
-break {logFileWriter(toUpper(yytext),yytext);return BREAK;}
-int {logFileWriter(toUpper(yytext),yytext);return INT;}
-char {logFileWriter(toUpper(yytext),yytext);return CHAR;}
-float {logFileWriter(toUpper(yytext),yytext);return FLOAT;}
-double {logFileWriter(toUpper(yytext),yytext);return DOUBLE;}
-void {logFileWriter(toUpper(yytext),yytext);return VOID;}
-return {logFileWriter(toUpper(yytext),yytext);return RETURN;}
-switch {logFileWriter(toUpper(yytext),yytext);return SWITCH;}
-case {logFileWriter(toUpper(yytext),yytext);return CASE;}
-default {logFileWriter(toUpper(yytext),yytext);return DEFAULT;}
-continue {logFileWriter(toUpper(yytext),yytext);return CONTINUE;}
-printf {logFileWriter(toUpper(yytext),yytext);return PRINTF;}
+if {lexLogWriter(toUpper(yytext),yytext); return IF; }
+else {lexLogWriter(toUpper(yytext),yytext); return ELSE;}
+for {lexLogWriter(toUpper(yytext),yytext);return FOR;}
+while {lexLogWriter(toUpper(yytext),yytext);return WHILE;}
+do {lexLogWriter(toUpper(yytext),yytext);return DO;}
+break {lexLogWriter(toUpper(yytext),yytext);return BREAK;}
+int {lexLogWriter(toUpper(yytext),yytext);return INT;}
+char {lexLogWriter(toUpper(yytext),yytext);return CHAR;}
+float {lexLogWriter(toUpper(yytext),yytext);return FLOAT;}
+double {lexLogWriter(toUpper(yytext),yytext);return DOUBLE;}
+void {lexLogWriter(toUpper(yytext),yytext);return VOID;}
+return {lexLogWriter(toUpper(yytext),yytext);return RETURN;}
+switch {lexLogWriter(toUpper(yytext),yytext);return SWITCH;}
+case {lexLogWriter(toUpper(yytext),yytext);return CASE;}
+default {lexLogWriter(toUpper(yytext),yytext);return DEFAULT;}
+continue {lexLogWriter(toUpper(yytext),yytext);return CONTINUE;}
+printf {lexLogWriter(toUpper(yytext),yytext);return PRINTLN;}
 
 {INT}      {
-                logFileWriter("CONST_INT",yytext);
+                lexLogWriter("CONST_INT",yytext);
                 tokenFileWriter("CONST_INT",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"CONST_INT"); 
+                yylval = new SymbolInfo(yytext,"CONST_INT"); 
                 return CONST_INT ;
 
             }
 
 
 {FLOAT}    {
-                logFileWriter("CONST_FLOAT",yytext); 
+                lexLogWriter("CONST_FLOAT",yytext); 
                 tokenFileWriter("CONST_FLOAT",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"CONST_FLOAT"); 
+                yylval = new SymbolInfo(yytext,"CONST_FLOAT"); 
                 return CONST_FLOAT ;
                 
                 }
 
 
 {ID}        {
-                logFileWriter("ID",yytext) ;
-                yylval.symbol = new SymbolInfo(yytext,"ID");
+                lexLogWriter("ID",yytext) ;
+                yylval = new SymbolInfo(yytext,"ID");
                 return ID ;
                 //tokenFileWriter("ID",yytext);
                 //insertSymbol("ID",yytext);
@@ -253,102 +256,108 @@ printf {logFileWriter(toUpper(yytext),yytext);return PRINTF;}
 
 
 {ADDOP}     {
-                logFileWriter("ADDOP",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"ADDOP");
+                lexLogWriter("ADDOP",yytext);
+                yylval = new SymbolInfo(yytext,"ADDOP");
                 return ADDOP ;
                 //tokenFileWriter("ADDOP",yytext);
             }
 {MULOP}     {
-                logFileWriter("MULOP",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"MULOP");
+                lexLogWriter("MULOP",yytext);
+                yylval = new SymbolInfo(yytext,"MULOP");
                 return MULOP ;
                 tokenFileWriter("MULOP",yytext);
             }
 {INCOP}     {
-                logFileWriter("INCOP",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"INCOP");
+                lexLogWriter("INCOP",yytext);
+                yylval = new SymbolInfo(yytext,"INCOP");
                 return INCOP ;
                 tokenFileWriter("INCOP",yytext);
             }
+{DECOP}     {
+                lexLogWriter("DECOP",yytext);
+                yylval = new SymbolInfo(yytext,"DECOP");
+                return DECOP ;
+                tokenFileWriter("DECOP",yytext);
+            }
 {RELOP}     {
-                logFileWriter("RELOP",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"RELOP");
+                lexLogWriter("RELOP",yytext);
+                yylval = new SymbolInfo(yytext,"RELOP");
                 return RELOP ;
                 tokenFileWriter("RELOP",yytext);
             }
 {ASSIGNOP}  {
-                logFileWriter("ASSIGNOP",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"ASSIGNOP");
+                lexLogWriter("ASSIGNOP",yytext);
+                yylval = new SymbolInfo(yytext,"ASSIGNOP");
                 return ASSIGNOP;
                 tokenFileWriter("ASSIGNOP",yytext);
             }
 {LOGICOP}   {
-                logFileWriter("LOGICOP",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"LOGICOP");
+                lexLogWriter("LOGICOP",yytext);
+                yylval = new SymbolInfo(yytext,"LOGICOP");
                 return LOGICOP ;
                 tokenFileWriter("LOGICOP",yytext);
             }
 {BITOP}     {
-                logFileWriter("BITOP",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"BITOP");
+                lexLogWriter("BITOP",yytext);
+                yylval = new SymbolInfo(yytext,"BITOP");
                 return BITOP;
                 tokenFileWriter("BITOP",yytext);
             }
 {NOT}       {
-                logFileWriter("NOT",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"NOT");
+                lexLogWriter("NOT",yytext);
+                yylval = new SymbolInfo(yytext,"NOT");
                 return NOT;
                 tokenFileWriter("NOT",yytext);
             }
 {LPAREN}    {
-                logFileWriter("LPAREN",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"LPAREN");
+                lexLogWriter("LPAREN",yytext);
+                yylval = new SymbolInfo(yytext,"LPAREN");
                 return LPAREN ;
                 tokenFileWriter("LPAREN",yytext);
             }
 {RPAREN}    {
-                logFileWriter("RPAREN",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"RPAREN");
+                lexLogWriter("RPAREN",yytext);
+                yylval = new SymbolInfo(yytext,"RPAREN");
                 return RPAREN;
                 tokenFileWriter("RPAREN",yytext);
             }
 {LCURL}     {
-                logFileWriter("LCURL",yytext);
+                lexLogWriter("LCURL",yytext);
                 tokenFileWriter("LCURL",yytext);
                 globalIndent++ ;
-                yylval.symbol = new SymbolInfo(yytext,"LCURL");
+                yylval = new SymbolInfo(yytext,"LCURL");
                 return LCURL;
             }
 {RCURL}     {
-                logFileWriter("RCURL",yytext);
+                lexLogWriter("RCURL",yytext);
                 tokenFileWriter("RCURL",yytext);
                 if(globalIndent!=0)
                     globalIndent -- ;
-                yylval.symbol = new SymbolInfo(yytext,"RCURL");
+                yylval = new SymbolInfo(yytext,"RCURL");
                 return RCURL;
             }
 {LSQUARE}   {
-                logFileWriter("LSQUARE",yytext);
+                lexLogWriter("LSQUARE",yytext);
                 tokenFileWriter("LSQUARE",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"LSQUARE");
+                yylval = new SymbolInfo(yytext,"LSQUARE");
                 return LTHIRD;
             }
 {RSQUARE}   {
-                logFileWriter("RSQUARE",yytext);
+                lexLogWriter("RSQUARE",yytext);
                 tokenFileWriter("RSQUARE",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"RSQUARE");
+                yylval = new SymbolInfo(yytext,"RSQUARE");
                 return RTHIRD;
             }
 {COMMA}     {
-                logFileWriter("COMMA",yytext);
+                lexLogWriter("COMMA",yytext);
                 tokenFileWriter("COMMA",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"COMMA");
+                yylval = new SymbolInfo(yytext,"COMMA");
                 return COMMA ;
             }
 {SEMICOLON} {
-                logFileWriter("SEMICOLON",yytext);
+                lexLogWriter("SEMICOLON",yytext);
                 tokenFileWriter("SEMICOLON",yytext);
-                yylval.symbol = new SymbolInfo(yytext,"SEMICOLON");
+                yylval = new SymbolInfo(yytext,"SEMICOLON");
                 return SEMICOLON;
             }
 
@@ -391,7 +400,7 @@ printf {logFileWriter(toUpper(yytext),yytext);return PRINTF;}
             characterLiteral = "";
             characterLiteral.push_back(c);
             tokenFileWriter(token, characterLiteral);
-            logFileWriter(token,characterLiteral);
+            lexLogWriter(token,characterLiteral);
 
         }
 
@@ -471,7 +480,7 @@ printf {logFileWriter(toUpper(yytext),yytext);return PRINTF;}
                         }
                         lexeme += yytext ;
                         tokenFileWriter(token,characterLiteral);
-                        logFileWriter(token,lexeme,tempLine);
+                        lexLogWriter(token,lexeme,tempLine);
 
                         characterLiteral.clear();
                         lexeme.clear();
@@ -502,7 +511,7 @@ printf {logFileWriter(toUpper(yytext),yytext);return PRINTF;}
                             return 0 ;     
                         }
 "//"[^\r\n]*  {
-    logFileWriter("SINGLE LINE COMMENT",yytext);
+    lexLogWriter("SINGLE LINE COMMENT",yytext);
 
 }
 
@@ -522,7 +531,7 @@ printf {logFileWriter(toUpper(yytext),yytext);return PRINTF;}
 }
 
 <SINGLE_LINE_COMMENT_STATE>{NEWLINE} {
-        logFileWriter("SINGLE LINE COMMENT",lexeme,tempLine);
+        lexLogWriter("SINGLE LINE COMMENT",lexeme,tempLine);
         line ++ ;
         tempLine=0;
         lexeme.clear();
@@ -530,7 +539,7 @@ printf {logFileWriter(toUpper(yytext),yytext);return PRINTF;}
 }
 
 <SINGLE_LINE_COMMENT_STATE><<EOF>> {
-    logFileWriter("SINGLE LINE COMMENT",lexeme,tempLine);
+    lexLogWriter("SINGLE LINE COMMENT",lexeme,tempLine);
     lexeme.clear();
     tempLine=0;
     endOfFile();
@@ -547,7 +556,7 @@ printf {logFileWriter(toUpper(yytext),yytext);return PRINTF;}
 
 <MULTILINE_COMMENT_STATE>"*/" {
     lexeme += yytext ;
-    logFileWriter("MULTI LINE COMMENT",lexeme,tempLine);
+    lexLogWriter("MULTI LINE COMMENT",lexeme,tempLine);
     lexeme.clear();
     tempLine=0;
     BEGIN INITIAL ;

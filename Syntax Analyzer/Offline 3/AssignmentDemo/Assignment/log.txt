@@ -7,17 +7,22 @@ Line# 1: Token <ID> Lexeme y found
 Line# 1: Token <COMMA> Lexeme , found
 Line# 1: Token <ID> Lexeme z found
 Line# 1: Token <SEMICOLON> Lexeme ; found
-program : unit
+unit : var_declaration
+program : program unit
 Line# 1: Token <FLOAT> Lexeme float found
 type_specifier : FLOAT
 Line# 1: Token <ID> Lexeme a found
 Line# 1: Token <SEMICOLON> Lexeme ; found
 declaration_list : ID
+unit : var_declaration
 program : program unit
 Line# 3: Token <VOID> Lexeme void found
+type_specifier : VOID
 Line# 3: Token <ID> Lexeme foo found
 Line# 3: Token <LPAREN> Lexeme ( found
 Line# 3: Token <RPAREN> Lexeme ) found
 Line# 3: Token <SEMICOLON> Lexeme ; found
+func_declaration : type_specifier ID LPAREN RPAREN SEMICOLON
+unit : func_declaration
 program : program unit
 start : program

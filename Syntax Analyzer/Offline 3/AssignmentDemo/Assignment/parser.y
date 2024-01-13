@@ -4,7 +4,8 @@
 #include<cstring>
 #include<fstream>
 #include<cmath>
-
+#include "2005037_SymbolTable.cpp"
+#define YYSTYPE SymbolInfo*
 
 using namespace std;
 
@@ -33,18 +34,25 @@ void logFileWriter(const string &left,const string &right){
 
 %}
 
-%union {
-	SymboInfo *symbol;
-}
-
-%token IF ELSE FOR WHILE DO BREAK INT CHAR FLOAT DOUBLE VOID RETURN SWITCH CASE DEFAULT CONTINUE PRINTF
+%token IF ELSE FOR WHILE DO BREAK INT CHAR FLOAT DOUBLE VOID RETURN SWITCH CASE DEFAULT CONTINUE PRINTLN
 %token STRING NOT LPAREN RPAREN LCURL RCURL LTHIRD RTHIRD BITOP COMMA SEMICOLON ASSIGNOP 
-%token<symbol> CONST_INT CONST_FLOAT CONST_CHAR LOGICOP RELOP ADDOP MULOP INCOP ID
+%token CONST_INT CONST_FLOAT CONST_CHAR LOGICOP RELOP ADDOP MULOP INCOP DECOP ID
 
-%left 
-%right
 
-%nonassoc 
+%left COMMA
+%right ASSIGNOP
+%left LOGICOP
+%left RELOP
+%left ADDOP
+%left MULOP
+%left LCURL RCURL
+%left LPAREN RPAREN
+
+%right PREFIX_INCOP
+%left POSTFIX_INCOP
+
+%nonassoc LOWER_THAN_ELSE
+%nonassoc ELSE
 
 
 %%
@@ -55,21 +63,37 @@ start : program
 	}
 	;
 
-program : program unit {}
+program : program unit {
+	logFileWriter("program","program unit");
+}
 	| unit {logFileWriter("program","program unit");}
 	;
 	
-unit : var_declaration 
-     | func_declaration
-     | func_definition
+unit : var_declaration {
+	logFileWriter("unit","var_declaration");
+}
+     | func_declaration {
+		logFileWriter("unit","func_declaration");
+	 }
+     | func_definition {
+		logFileWriter("unit","func_definition");
+	 }
      ;
      
-func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON
-		| type_specifier ID LPAREN RPAREN SEMICOLON
+func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON {
+	logFileWriter("func_declaration","type_specifier ID LPAREN parameter_list RPAREN SEMICOLON");
+}
+		| type_specifier ID LPAREN RPAREN SEMICOLON {
+			logFileWriter("func_declaration","type_specifier ID LPAREN RPAREN SEMICOLON");
+		}
 		;
 		 
-func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
-		| type_specifier ID LPAREN RPAREN compound_statement
+func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement {
+	logFileWriter("func_definition","type_specifier ID LPAREN parameter_list RPAREN compound_statement");
+}
+		| type_specifier ID LPAREN RPAREN compound_statement {
+			logFileWriter("func_definition","type_specifier ID LPAREN RPAREN compound_statement");
+		}
  		;				
 
 
@@ -151,26 +175,30 @@ term :	unary_expression
      |  term MULOP unary_expression
      ;
 
-unary_expression : ADDOP unary_expression  
-		 | NOT unary_expression 
-		 | factor 
+unary_expression : ADDOP unary_expression {logFileWriter("unary_expression","ADDOP unary_expression");} 
+		 | NOT unary_expression {logFileWriter("unary_expression","NOT unary_expression");}
+		 | factor {logFileWriter("unary_expression","factor");}
 		 ;
 	
-factor	: variable 
-	| ID LPAREN argument_list RPAREN
-	| LPAREN expression RPAREN
-	| CONST_INT 
-	| CONST_FLOAT
-	| variable INCOP 
-	| variable DECOP
+factor	: variable {logFileWriter("factor","variable");}
+	| ID LPAREN argument_list RPAREN {logFileWriter("factor","ID LPAREN argument_list RPAREN");}
+	| LPAREN expression RPAREN {logFileWriter("factor","LPAREN expression RPAREN");}
+	| CONST_INT  {logFileWriter("factor","CONST_INT");} 
+	| CONST_FLOAT {logFileWriter("factor","CONST_FLOAT");}
+	| variable INCOP {logFileWriter("factor","variable INCOP");} 
+	| variable DECOP {logFileWriter("factor","variable DECOP");}
 	;
 	
-argument_list : arguments
+argument_list : arguments {logFileWriter("argument_list","arguments");}
 			  |
 			  ;
 	
-arguments : arguments COMMA logic_expression
-	      | logic_expression
+arguments : arguments COMMA logic_expression {
+	logFileWriter("arguments","arguments COMMA logic_expression");
+}
+	      | logic_expression {
+			logFileWriter("arguments","logic_expression");
+		  }
 	      ;
  
 
@@ -179,13 +207,13 @@ int main(int argc,char *argv[])
 {
 	FILE *fp ;
 
-	fp = fopen("input.txt", "r");
+	// fp = fopen("input.txt", "r");
 
-    // if((fp=fopen(argv[1],"r"))==NULL)
-	// {
-	// 	printf("Cannot Open Input File.\n");
-	// 	exit(1);
-	// }
+    if((fp=fopen(argv[1],"r"))==NULL)
+	{
+		printf("Cannot Open Input File.\n");
+		exit(1);
+	}
 
 	logFile.open("log.txt");
 	errorFile.open("error.txt");

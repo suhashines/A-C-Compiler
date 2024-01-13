@@ -30,14 +30,18 @@
 #define COMMA 283
 #define SEMICOLON 284
 #define ASSIGNOP 285
-#define LOGICOP 286
-#define RELOP 287
-#define ADDOP 288
-#define MULOP 289
-#define INCOP 290
-#define DECOP 291
-#define ID 292
-#define CONST_INT 293
-#define CONST_FLOAT 294
+#define CONST_INT 286
+#define CONST_FLOAT 287
+#define CONST_CHAR 288
+#define LOGICOP 289
+#define RELOP 290
+#define ADDOP 291
+#define MULOP 292
+#define INCOP 293
+#define DECOP 294
+#define ID 295
+#define PREFIX_INCOP 296
+#define POSTFIX_INCOP 297
+#define LOWER_THAN_ELSE 298
 
 #endif /* _yy_defines_h_ */
