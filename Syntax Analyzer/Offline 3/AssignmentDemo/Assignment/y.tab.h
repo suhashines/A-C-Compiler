@@ -38,8 +38,7 @@
 #define BITOP 291
 #define MULOP 292
 #define ID 293
-#define func_prototype 294
-#define LOWER_THAN_ELSE 295
+#define LOWER_THAN_ELSE 294
 #ifdef YYSTYPE
 #undef  YYSTYPE_IS_DECLARED
 #define YYSTYPE_IS_DECLARED 1
@@ -47,7 +46,7 @@
 #ifndef YYSTYPE_IS_DECLARED
 #define YYSTYPE_IS_DECLARED 1
 typedef union YYSTYPE{
-	SymbolInfo* symbolInfo ;
+	ParseTreeNode* parseTreeNode;
 } YYSTYPE;
 #endif /* !YYSTYPE_IS_DECLARED */
 extern YYSTYPE yylval;

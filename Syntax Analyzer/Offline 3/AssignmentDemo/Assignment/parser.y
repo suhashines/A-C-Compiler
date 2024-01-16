@@ -5,6 +5,7 @@
 #include<fstream>
 #include<cmath>
 #include "2005037_SymbolTable.cpp"
+#include "2005037_ParseTreeNode.cpp"
 
 using namespace std;
 
@@ -19,6 +20,10 @@ SymbolTable symbolTable(11);
 
 ofstream logFile ;
 ofstream errorFile;
+ofstream parseFile ;
+
+//necessary global variables 
+string varType ;
 
 void yyerror(char *s)
 {
@@ -32,8 +37,6 @@ void printTable(){
 }
 
 
-
-
 void logFileWriter(const string &left,const string &right){
 	logFile<<left<<" : "<<right<<endl;
 }
@@ -43,22 +46,93 @@ void summaryWriter(){
     logFile<<"Total Errors: "<<error<<endl;
 }
 
+//here comes the beast who prints the entire parseTree
+
+void printParseTree(ParseTreeNode *root, int space)
+{
+
+    for (int i = 0; i < space; i++)
+    {
+        parseFile << " ";
+    }
+
+    if (root->isLeaf)
+    {
+        parseFile << root->token << " : " << root->lexeme << "\t<Line : " << root->startLine << ">\n";
+        return ;
+    }
+
+    parseFile<<root->name<<" :"<<root->nameList<< "\t<Line : " <<root->startLine <<"-"<<root->endLine<< ">\n";
+
+    for(ParseTreeNode* node:root->children){
+        printParseTree(node,space+1);
+    }
+
+
+}
+
+
+/* necessary functions for recognizing semantic errors */
+
+
+void handleIdDeclaration(ParseTreeNode* node){
+	//extracting information 
+
+	string lexeme = node->lexeme ;
+	string token = node->token;
+	string idType = varType ;
+	int lineCount = node->startLine;
+
+	//looking for error 
+
+	if(idType=="void"){
+		errorFile<<"Line# "<<lineCount<<": Variable or field '"<<lexeme<<"' declared as void\n";
+		return ;
+	}
+
+	if(symbolTable.containsFunction(lexeme)){
+		errorFile<<"Line# "<<lineCount<<": '"<<lexeme<<"' redeclared as different kind of symbol\n";
+		return ;
+	}
+
+	IdInfo * idInfo = (IdInfo*) symbolTable.lookupCurrentScope(lexeme);
+
+	if(idInfo!=nullptr){
+		if(idInfo->idType==idType){
+			errorFile<<"Line# "<<lineCount<<": '"<<"Multiple declaration of '"<<lexeme<<"'\n";
+		}else{
+			errorFile<<"Line# "<<lineCount<<": '"<<"Conflicting types for '"<<lexeme<<"'\n";
+		}
+
+		return ;
+	}
+
+	symbolTable.insert(lexeme,token,idType);
+
+}
+
+
+
+
+
+
+
+
+//////  grammar section ///////////////////////
+
 
 %}
 
 %union{
-	SymbolInfo* symbolInfo ;
+	ParseTreeNode* parseTreeNode;
 }
 
-%token IF ELSE FOR WHILE DO BREAK INT CHAR FLOAT DOUBLE VOID RETURN SWITCH CASE DEFAULT CONTINUE PRINTLN
-%token NOT LPAREN RPAREN LCURL RCURL LTHIRD RTHIRD COMMA SEMICOLON INCOP DECOP ASSIGNOP 
-%token<symbolInfo> CONST_INT CONST_FLOAT LOGICOP RELOP ADDOP BITOP MULOP ID
+%token <parseTreeNode> IF ELSE FOR WHILE DO BREAK INT CHAR FLOAT DOUBLE VOID RETURN SWITCH CASE DEFAULT CONTINUE PRINTLN
+%token <parseTreeNode> NOT LPAREN RPAREN LCURL RCURL LTHIRD RTHIRD COMMA SEMICOLON INCOP DECOP ASSIGNOP 
+%token <parseTreeNode> CONST_INT CONST_FLOAT LOGICOP RELOP ADDOP BITOP MULOP ID
 
-%type <symbolInfo> program unit func_prototype func_declaration func_definition parameter_list compound_statement var_declaration
-type_specifier declaration_list statements statement expression_statement variable expression
-logic_expression rel_expression simple_expression term unary_expression factor argument_list arguments
+%type <parseTreeNode> start program unit var_declaration func_declaration func_definition type_specifier parameter_list compound_statement statements declaration_list statement expression_statement expression variable logic_expression rel_expression simple_expression term unary_expression factor argument_list arguments
 
-%destructor {delete $$ ; } <symbolInfo>
 
 %left COMMA
 %right ASSIGNOP
@@ -79,17 +153,27 @@ start : program
 	{
 		logFileWriter("start","program");
 		summaryWriter();
+		$$ = new ParseTreeNode("start");
+		$$->addChild($1);
+		printParseTree($$,0);
 	}
 	;
 
 program : program unit {
 	logFileWriter("program","program unit");
 }
-	| unit {logFileWriter("program","unit");}
+	| unit {logFileWriter("program","unit");
+	
+	$$ = new ParseTreeNode("program");
+	$$->addChild($1);
+	
+	}
 	;
 	
 unit : var_declaration {
 	logFileWriter("unit","var_declaration");
+	$$ = new ParseTreeNode("unit");
+	$$->addChild($1);
 }
      | func_declaration {
 		logFileWriter("unit","func_declaration");
@@ -127,28 +211,61 @@ compound_statement : LCURL statements RCURL {logFileWriter("compound_statement",
  		    | LCURL RCURL {logFileWriter("compound_statement","LCURL RCURL");}
  		    ;
  		    
-var_declaration : type_specifier declaration_list SEMICOLON {logFileWriter("var_declaration","type_specifier declaration_list SEMICOLON");}
+var_declaration : type_specifier declaration_list SEMICOLON {logFileWriter("var_declaration","type_specifier declaration_list SEMICOLON");
+
+$$ = new ParseTreeNode("var_declaration");
+$$->addChild($1);
+$$->addChild($2);
+$$->addChild($3);
+
+}
  		 ;
  		 
 type_specifier	: INT  {
 							logFileWriter("type_specifier","INT");
+							varType = "int" ;
+							$$ = new ParseTreeNode("type_specifier");
+							$$->addChild($1);
+
+
 					   }
  		| FLOAT        {
 							logFileWriter("type_specifier", "FLOAT");
+							varType = "float" ;
+							$$ = new ParseTreeNode("type_specifier");
+							$$->addChild($1);
 					   }
  		| VOID		  {
 							logFileWriter("type_specifier", "VOID");
+							varType = "void" ;
+							$$ = new ParseTreeNode("type_specifier");
+							$$->addChild($1);
 		}
  		;
  		
 declaration_list : declaration_list COMMA ID {
 	logFileWriter("declaration_list","declaration_list COMMA ID");
+	
+	handleIdDeclaration($3);
+
+	$$ = new ParseTreeNode("declaration_list");
+
+	$$->addChild($1);
+	$$->addChild($2);
+	$$->addChild($3);
+	
+
 }
  		  | declaration_list COMMA ID LTHIRD CONST_INT RTHIRD {
 			logFileWriter("declaration_list","declaration_list COMMA ID LSQUARE CONST_INT RSQUARE");
 		  }
  		  | ID {
 			logFileWriter("declaration_list","ID");
+			handleIdDeclaration($1);
+
+			$$ = new ParseTreeNode("declaration_list");
+			$$->addChild($1);
+			
 			}
  		  | ID LTHIRD CONST_INT RTHIRD  {
 			logFileWriter("declaration_list","ID LTHIRD CONST_INT RTHIRD");
@@ -274,6 +391,7 @@ int main(int argc,char *argv[])
 
 	logFile.open("log.txt");
 	errorFile.open("error.txt");
+	parseFile.open("parsetree.txt");
 	
 
 	yyin=fp;

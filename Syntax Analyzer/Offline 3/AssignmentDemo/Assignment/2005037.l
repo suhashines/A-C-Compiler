@@ -11,7 +11,7 @@
 #include<fstream>
 #include<string>
 #include<cctype>
-#include "2005037_SymbolInfo.cpp"
+#include "2005037_ParseTreeNode.cpp"
 #include "y.tab.h"
 
 using namespace std;
@@ -116,7 +116,7 @@ void endOfFile(){
 %}
 
 UNIX        [\n]
-WINDOWS     [\r\n]
+WINDOWS     "\r\n"
 NEWLINE     {UNIX}|{WINDOWS}
 WHITESPACE  [ \t\v\f\r]
 
@@ -191,28 +191,93 @@ INVALID_ID_SUFFIX_NUM_PREFIX  {FLOAT}{ID}+
 
 {WHITESPACE}    { }
 
-if {lexLogWriter(toUpper(yytext),yytext); return IF; }
-else {lexLogWriter(toUpper(yytext),yytext); return ELSE;}
-for {lexLogWriter(toUpper(yytext),yytext);return FOR;}
-while {lexLogWriter(toUpper(yytext),yytext);return WHILE;}
-do {lexLogWriter(toUpper(yytext),yytext);return DO;}
-break {lexLogWriter(toUpper(yytext),yytext);return BREAK;}
-int {lexLogWriter(toUpper(yytext),yytext);return INT;}
-char {lexLogWriter(toUpper(yytext),yytext);return CHAR;}
-float {lexLogWriter(toUpper(yytext),yytext);return FLOAT;}
-double {lexLogWriter(toUpper(yytext),yytext);return DOUBLE;}
-void {lexLogWriter(toUpper(yytext),yytext);return VOID;}
-return {lexLogWriter(toUpper(yytext),yytext);return RETURN;}
-switch {lexLogWriter(toUpper(yytext),yytext);return SWITCH;}
-case {lexLogWriter(toUpper(yytext),yytext);return CASE;}
-default {lexLogWriter(toUpper(yytext),yytext);return DEFAULT;}
-continue {lexLogWriter(toUpper(yytext),yytext);return CONTINUE;}
-println {lexLogWriter(toUpper(yytext),yytext);return PRINTLN;}
+if {
+ lexLogWriter(toUpper(yytext),yytext); 
+ yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+ return IF ;
+ }
+else {
+    lexLogWriter(toUpper(yytext),yytext);
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return ELSE ; }
+
+for {
+    lexLogWriter(toUpper(yytext),yytext);
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return FOR ;}
+
+while {
+    lexLogWriter(toUpper(yytext),yytext);
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return WHILE ;}
+
+do {
+    lexLogWriter(toUpper(yytext),yytext);
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return DO ;}
+break {
+    lexLogWriter(toUpper(yytext),yytext);
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return BREAK; }
+int {
+    lexLogWriter(toUpper(yytext),yytext);
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return INT ;}
+char {
+    lexLogWriter(toUpper(yytext),yytext);
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return CHAR ;}
+float {
+    lexLogWriter(toUpper(yytext),yytext); 
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return FLOAT ;
+    }
+double {
+    
+    lexLogWriter(toUpper(yytext),yytext);
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return DOUBLE; 
+    }
+void {
+    lexLogWriter(toUpper(yytext),yytext);
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return VOID; 
+    }
+return {
+    lexLogWriter(toUpper(yytext),yytext);
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return RETURN; 
+    }
+switch {
+    lexLogWriter(toUpper(yytext),yytext);
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return SWITCH; 
+    }
+case {
+    lexLogWriter(toUpper(yytext),yytext);
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return CASE; 
+    }
+default {
+    lexLogWriter(toUpper(yytext),yytext); 
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return DEFAULT;
+    }
+continue {
+    lexLogWriter(toUpper(yytext),yytext); 
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return CONTINUE;
+    }
+println {
+    lexLogWriter(toUpper(yytext),yytext); 
+    yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
+    return PRINTLN;
+    }
 
 {INT}      {
                 lexLogWriter("CONST_INT",yytext);
                 tokenFileWriter("CONST_INT",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"CONST_INT"); 
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"CONST_INT",line); 
                 return CONST_INT ;
 
             }
@@ -221,7 +286,7 @@ println {lexLogWriter(toUpper(yytext),yytext);return PRINTLN;}
 {FLOAT}    {
                 lexLogWriter("CONST_FLOAT",yytext); 
                 tokenFileWriter("CONST_FLOAT",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"CONST_FLOAT"); 
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"CONST_FLOAT",line); 
                 return CONST_FLOAT ;
                 
                 }
@@ -229,7 +294,7 @@ println {lexLogWriter(toUpper(yytext),yytext);return PRINTLN;}
 
 {ID}        {
                 lexLogWriter("ID",yytext) ;
-                yylval.symbolInfo = new SymbolInfo(yytext,"ID");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"ID",line);
                 return ID ;
                 //tokenFileWriter("ID",yytext);
                 //insertSymbol("ID",yytext);
@@ -251,67 +316,67 @@ println {lexLogWriter(toUpper(yytext),yytext);return PRINTLN;}
 
 {ADDOP}     {
                 lexLogWriter("ADDOP",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"ADDOP");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"ADDOP",line);
                 return ADDOP ;
                 //tokenFileWriter("ADDOP",yytext);
             }
 {MULOP}     {
                 lexLogWriter("MULOP",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"MULOP");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"MULOP",line);
                 return MULOP ;
                 tokenFileWriter("MULOP",yytext);
             }
 {INCOP}     {
                 lexLogWriter("INCOP",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"INCOP");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"INCOP",line);
                 return INCOP ;
                 tokenFileWriter("INCOP",yytext);
             }
 {DECOP}     {
                 lexLogWriter("DECOP",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"DECOP");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"DECOP",line);
                 return DECOP ;
                 tokenFileWriter("DECOP",yytext);
             }
 {RELOP}     {
                 lexLogWriter("RELOP",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"RELOP");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"RELOP",line);
                 return RELOP ;
                 tokenFileWriter("RELOP",yytext);
             }
 {ASSIGNOP}  {
                 lexLogWriter("ASSIGNOP",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"ASSIGNOP");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"ASSIGNOP",line);
                 return ASSIGNOP;
                 tokenFileWriter("ASSIGNOP",yytext);
             }
 {LOGICOP}   {
                 lexLogWriter("LOGICOP",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"LOGICOP");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"LOGICOP",line);
                 return LOGICOP ;
                 tokenFileWriter("LOGICOP",yytext);
             }
 {BITOP}     {
                 lexLogWriter("BITOP",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"BITOP");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"BITOP",line);
                 return BITOP;
                 tokenFileWriter("BITOP",yytext);
             }
 {NOT}       {
                 lexLogWriter("NOT",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"NOT");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"NOT",line);
                 return NOT;
                 tokenFileWriter("NOT",yytext);
             }
 {LPAREN}    {
                 lexLogWriter("LPAREN",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"LPAREN");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"LPAREN",line);
                 return LPAREN ;
                 tokenFileWriter("LPAREN",yytext);
             }
 {RPAREN}    {
                 lexLogWriter("RPAREN",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"RPAREN");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"RPAREN",line);
                 return RPAREN;
                 tokenFileWriter("RPAREN",yytext);
             }
@@ -319,7 +384,7 @@ println {lexLogWriter(toUpper(yytext),yytext);return PRINTLN;}
                 lexLogWriter("LCURL",yytext);
                 tokenFileWriter("LCURL",yytext);
                 globalIndent++ ;
-                yylval.symbolInfo = new SymbolInfo(yytext,"LCURL");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"LCURL",line);
                 return LCURL;
             }
 {RCURL}     {
@@ -327,31 +392,31 @@ println {lexLogWriter(toUpper(yytext),yytext);return PRINTLN;}
                 tokenFileWriter("RCURL",yytext);
                 if(globalIndent!=0)
                     globalIndent -- ;
-                yylval.symbolInfo = new SymbolInfo(yytext,"RCURL");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"RCURL",line);
                 return RCURL;
             }
 {LSQUARE}   {
                 lexLogWriter("LSQUARE",yytext);
                 tokenFileWriter("LSQUARE",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"LSQUARE");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"LSQUARE",line);
                 return LTHIRD;
             }
 {RSQUARE}   {
                 lexLogWriter("RSQUARE",yytext);
                 tokenFileWriter("RSQUARE",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"RSQUARE");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"RSQUARE",line);
                 return RTHIRD;
             }
 {COMMA}     {
                 lexLogWriter("COMMA",yytext);
                 tokenFileWriter("COMMA",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"COMMA");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"COMMA",line);
                 return COMMA ;
             }
 {SEMICOLON} {
                 lexLogWriter("SEMICOLON",yytext);
                 tokenFileWriter("SEMICOLON",yytext);
-                yylval.symbolInfo = new SymbolInfo(yytext,"SEMICOLON");
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"SEMICOLON",line);
                 return SEMICOLON;
             }
 

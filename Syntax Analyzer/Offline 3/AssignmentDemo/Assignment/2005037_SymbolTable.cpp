@@ -99,6 +99,11 @@ public:
         return nullptr ;
     }
 
+    SymbolInfo * lookupCurrentScope(const string &name){
+
+        return tail->lookup(name);
+    }
+
     void printCurrent(){
         tail->printTable();
     }

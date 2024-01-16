@@ -1,0 +1,9 @@
+start : program	<Line : 1-1>
+ program : unit	<Line : 1-1>
+  unit : var_declaration	<Line : 1-1>
+   var_declaration : type_specifier declaration_list SEMICOLON	<Line : 1-1>
+    type_specifier : INT	<Line : 1-1>
+     INT : int	<Line : 1>
+    declaration_list : ID	<Line : 1-1>
+     ID : x	<Line : 1>
+    SEMICOLON : ;	<Line : 1>

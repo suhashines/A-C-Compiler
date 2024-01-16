@@ -158,11 +158,8 @@ public:
              return false;
              }
 
-        if(isFunction){
-          symbol = new FunctionInfo(name, type);  
-        }else{
-            symbol = new SymbolInfo(name,type);
-        }
+     
+        symbol = new FunctionInfo(name, type);  
 
         
 
