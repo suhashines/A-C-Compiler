@@ -16,7 +16,7 @@
 
 using namespace std;
 
-extern SymbolInfo* yylval ;
+extern YYSTYPE yylval ;
 
 int line = 1 ;
 int error = 0 ;
@@ -96,12 +96,6 @@ void lexLogWriter(const string &token,const string &lexeme,int lineCount){
 
 void warningWriter(int tab,int indent){
     logFile<<"Line# "<<line<<": warning, "<<indent<<" of tabs needed but got "<<tab<<" tabs."<<endl;
-}
-
-void summaryWriter(){
-    logFile<<"Total lines: "<<line<<endl;
-    logFile<<"Total errors: "<<error<<endl;
-    logFile<<"Total warnings: "<<warning<<endl;
 }
 
 void insertSymbol(const string &token,const string &lexeme){
@@ -213,12 +207,12 @@ switch {lexLogWriter(toUpper(yytext),yytext);return SWITCH;}
 case {lexLogWriter(toUpper(yytext),yytext);return CASE;}
 default {lexLogWriter(toUpper(yytext),yytext);return DEFAULT;}
 continue {lexLogWriter(toUpper(yytext),yytext);return CONTINUE;}
-printf {lexLogWriter(toUpper(yytext),yytext);return PRINTLN;}
+println {lexLogWriter(toUpper(yytext),yytext);return PRINTLN;}
 
 {INT}      {
                 lexLogWriter("CONST_INT",yytext);
                 tokenFileWriter("CONST_INT",yytext);
-                yylval = new SymbolInfo(yytext,"CONST_INT"); 
+                yylval.symbolInfo = new SymbolInfo(yytext,"CONST_INT"); 
                 return CONST_INT ;
 
             }
@@ -227,7 +221,7 @@ printf {lexLogWriter(toUpper(yytext),yytext);return PRINTLN;}
 {FLOAT}    {
                 lexLogWriter("CONST_FLOAT",yytext); 
                 tokenFileWriter("CONST_FLOAT",yytext);
-                yylval = new SymbolInfo(yytext,"CONST_FLOAT"); 
+                yylval.symbolInfo = new SymbolInfo(yytext,"CONST_FLOAT"); 
                 return CONST_FLOAT ;
                 
                 }
@@ -235,7 +229,7 @@ printf {lexLogWriter(toUpper(yytext),yytext);return PRINTLN;}
 
 {ID}        {
                 lexLogWriter("ID",yytext) ;
-                yylval = new SymbolInfo(yytext,"ID");
+                yylval.symbolInfo = new SymbolInfo(yytext,"ID");
                 return ID ;
                 //tokenFileWriter("ID",yytext);
                 //insertSymbol("ID",yytext);
@@ -257,67 +251,67 @@ printf {lexLogWriter(toUpper(yytext),yytext);return PRINTLN;}
 
 {ADDOP}     {
                 lexLogWriter("ADDOP",yytext);
-                yylval = new SymbolInfo(yytext,"ADDOP");
+                yylval.symbolInfo = new SymbolInfo(yytext,"ADDOP");
                 return ADDOP ;
                 //tokenFileWriter("ADDOP",yytext);
             }
 {MULOP}     {
                 lexLogWriter("MULOP",yytext);
-                yylval = new SymbolInfo(yytext,"MULOP");
+                yylval.symbolInfo = new SymbolInfo(yytext,"MULOP");
                 return MULOP ;
                 tokenFileWriter("MULOP",yytext);
             }
 {INCOP}     {
                 lexLogWriter("INCOP",yytext);
-                yylval = new SymbolInfo(yytext,"INCOP");
+                yylval.symbolInfo = new SymbolInfo(yytext,"INCOP");
                 return INCOP ;
                 tokenFileWriter("INCOP",yytext);
             }
 {DECOP}     {
                 lexLogWriter("DECOP",yytext);
-                yylval = new SymbolInfo(yytext,"DECOP");
+                yylval.symbolInfo = new SymbolInfo(yytext,"DECOP");
                 return DECOP ;
                 tokenFileWriter("DECOP",yytext);
             }
 {RELOP}     {
                 lexLogWriter("RELOP",yytext);
-                yylval = new SymbolInfo(yytext,"RELOP");
+                yylval.symbolInfo = new SymbolInfo(yytext,"RELOP");
                 return RELOP ;
                 tokenFileWriter("RELOP",yytext);
             }
 {ASSIGNOP}  {
                 lexLogWriter("ASSIGNOP",yytext);
-                yylval = new SymbolInfo(yytext,"ASSIGNOP");
+                yylval.symbolInfo = new SymbolInfo(yytext,"ASSIGNOP");
                 return ASSIGNOP;
                 tokenFileWriter("ASSIGNOP",yytext);
             }
 {LOGICOP}   {
                 lexLogWriter("LOGICOP",yytext);
-                yylval = new SymbolInfo(yytext,"LOGICOP");
+                yylval.symbolInfo = new SymbolInfo(yytext,"LOGICOP");
                 return LOGICOP ;
                 tokenFileWriter("LOGICOP",yytext);
             }
 {BITOP}     {
                 lexLogWriter("BITOP",yytext);
-                yylval = new SymbolInfo(yytext,"BITOP");
+                yylval.symbolInfo = new SymbolInfo(yytext,"BITOP");
                 return BITOP;
                 tokenFileWriter("BITOP",yytext);
             }
 {NOT}       {
                 lexLogWriter("NOT",yytext);
-                yylval = new SymbolInfo(yytext,"NOT");
+                yylval.symbolInfo = new SymbolInfo(yytext,"NOT");
                 return NOT;
                 tokenFileWriter("NOT",yytext);
             }
 {LPAREN}    {
                 lexLogWriter("LPAREN",yytext);
-                yylval = new SymbolInfo(yytext,"LPAREN");
+                yylval.symbolInfo = new SymbolInfo(yytext,"LPAREN");
                 return LPAREN ;
                 tokenFileWriter("LPAREN",yytext);
             }
 {RPAREN}    {
                 lexLogWriter("RPAREN",yytext);
-                yylval = new SymbolInfo(yytext,"RPAREN");
+                yylval.symbolInfo = new SymbolInfo(yytext,"RPAREN");
                 return RPAREN;
                 tokenFileWriter("RPAREN",yytext);
             }
@@ -325,7 +319,7 @@ printf {lexLogWriter(toUpper(yytext),yytext);return PRINTLN;}
                 lexLogWriter("LCURL",yytext);
                 tokenFileWriter("LCURL",yytext);
                 globalIndent++ ;
-                yylval = new SymbolInfo(yytext,"LCURL");
+                yylval.symbolInfo = new SymbolInfo(yytext,"LCURL");
                 return LCURL;
             }
 {RCURL}     {
@@ -333,31 +327,31 @@ printf {lexLogWriter(toUpper(yytext),yytext);return PRINTLN;}
                 tokenFileWriter("RCURL",yytext);
                 if(globalIndent!=0)
                     globalIndent -- ;
-                yylval = new SymbolInfo(yytext,"RCURL");
+                yylval.symbolInfo = new SymbolInfo(yytext,"RCURL");
                 return RCURL;
             }
 {LSQUARE}   {
                 lexLogWriter("LSQUARE",yytext);
                 tokenFileWriter("LSQUARE",yytext);
-                yylval = new SymbolInfo(yytext,"LSQUARE");
+                yylval.symbolInfo = new SymbolInfo(yytext,"LSQUARE");
                 return LTHIRD;
             }
 {RSQUARE}   {
                 lexLogWriter("RSQUARE",yytext);
                 tokenFileWriter("RSQUARE",yytext);
-                yylval = new SymbolInfo(yytext,"RSQUARE");
+                yylval.symbolInfo = new SymbolInfo(yytext,"RSQUARE");
                 return RTHIRD;
             }
 {COMMA}     {
                 lexLogWriter("COMMA",yytext);
                 tokenFileWriter("COMMA",yytext);
-                yylval = new SymbolInfo(yytext,"COMMA");
+                yylval.symbolInfo = new SymbolInfo(yytext,"COMMA");
                 return COMMA ;
             }
 {SEMICOLON} {
                 lexLogWriter("SEMICOLON",yytext);
                 tokenFileWriter("SEMICOLON",yytext);
-                yylval = new SymbolInfo(yytext,"SEMICOLON");
+                yylval.symbolInfo = new SymbolInfo(yytext,"SEMICOLON");
                 return SEMICOLON;
             }
 

@@ -1,5 +1,7 @@
 #include <iostream>
+#include <list>
 #include "2005037_ScopeTable.cpp"
+
 
 using namespace std;
 
@@ -9,6 +11,8 @@ class SymbolTable
     ScopeTable *head;
     ScopeTable *tail;
     int bucket;
+
+    list <FunctionInfo*> functionList ;
 
 public:
     SymbolTable(int n)
@@ -45,9 +49,30 @@ public:
         delete temp;
     }
 
-    bool insert(const string &name,const string &type)
+    bool insert(const string &name,const string &type,const string &idType)
     {
-        return tail->insert(name, type);
+        return tail->insert(name, type,idType);
+    }
+
+    bool insert(const string &name,const string &type,bool isFunction=false){
+
+        if(tail->insert(name,type,isFunction)){
+            functionList.push_back((FunctionInfo*)tail->lookup(name));
+            return true;
+        }
+
+        return false;
+    }
+
+    bool containsFunction(const string &name){
+
+        for(FunctionInfo* function: functionList){
+            if(function->getName()==name){
+                return true;
+            }
+        }
+
+        return false;
     }
 
     bool remove(const string &name)

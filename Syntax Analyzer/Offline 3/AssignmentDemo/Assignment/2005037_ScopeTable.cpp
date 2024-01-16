@@ -107,7 +107,9 @@ public:
         return nullptr;
     }
 
-    bool insert(const string &name, const string &type)
+    
+
+    bool insert(const string &name, const string &type,const string &idType)
     {   //cout<<"\t" ;
 
         SymbolInfo *symbol = insertUtil(name);
@@ -117,7 +119,52 @@ public:
              return false;
              }
 
-        symbol = new SymbolInfo(name, type);
+        symbol = new IdInfo(name, idType);
+
+        int index = hashFunction(name);
+        int chain = 1 ;
+
+        if (arr[index] == nullptr)
+        {
+            arr[index] = symbol;
+            //cout<<"Inserted  at position "<<"<"<<index+1<<", "<<chain<<"> of ScopeTable# "<<id<<endl;
+            return true;
+        }
+
+        chain ++ ;
+
+        SymbolInfo *curr = arr[index];
+
+        while (curr->next != nullptr)
+        {
+            curr = curr->next;
+            chain++ ;
+        }
+
+        curr->next = symbol;
+
+        //cout<<"Inserted  at position "<<"<"<<index+1<<", "<<chain<<"> of ScopeTable# "<<id<<endl;
+
+        return true;
+    }
+
+    bool insert(const string &name, const string &type,bool isFunction=false)
+    {   //cout<<"\t" ;
+
+        SymbolInfo *symbol = insertUtil(name);
+
+        if (symbol != nullptr)
+          {  //cout<<"'"<<name<<"'"<<" already exists in the current ScopeTable# "<<id<<endl;
+             return false;
+             }
+
+        if(isFunction){
+          symbol = new FunctionInfo(name, type);  
+        }else{
+            symbol = new SymbolInfo(name,type);
+        }
+
+        
 
         int index = hashFunction(name);
         int chain = 1 ;
@@ -180,7 +227,7 @@ std::string getTableString()
 
     for (int i = 0; i < bucket; i++)
     {
-        tableString += "\t" + std::to_string(i + 1);
+        
 
         SymbolInfo *curr = arr[i];
 
@@ -189,6 +236,8 @@ std::string getTableString()
             tableString += "\n";
             continue;
         }
+
+        tableString += "\t" + std::to_string(i + 1);
 
         while (curr != nullptr)
         {

@@ -5,7 +5,6 @@
 #include<fstream>
 #include<cmath>
 #include "2005037_SymbolTable.cpp"
-#define YYSTYPE SymbolInfo*
 
 using namespace std;
 
@@ -13,9 +12,10 @@ int yyparse(void);
 int yylex(void);
 
 extern int line ;
+extern int error ;
 extern FILE *yyin;
 
-//SymbolTable *table;
+SymbolTable symbolTable(11);
 
 ofstream logFile ;
 ofstream errorFile;
@@ -27,17 +27,38 @@ void yyerror(char *s)
 }
 
 
+void printTable(){
+	logFile<<symbolTable.printAll();
+}
+
+
+
+
 void logFileWriter(const string &left,const string &right){
 	logFile<<left<<" : "<<right<<endl;
+}
+
+void summaryWriter(){
+    logFile<<"Total Lines: "<<line<<endl;
+    logFile<<"Total Errors: "<<error<<endl;
 }
 
 
 %}
 
-%token IF ELSE FOR WHILE DO BREAK INT CHAR FLOAT DOUBLE VOID RETURN SWITCH CASE DEFAULT CONTINUE PRINTLN
-%token STRING NOT LPAREN RPAREN LCURL RCURL LTHIRD RTHIRD BITOP COMMA SEMICOLON ASSIGNOP 
-%token CONST_INT CONST_FLOAT CONST_CHAR LOGICOP RELOP ADDOP MULOP INCOP DECOP ID
+%union{
+	SymbolInfo* symbolInfo ;
+}
 
+%token IF ELSE FOR WHILE DO BREAK INT CHAR FLOAT DOUBLE VOID RETURN SWITCH CASE DEFAULT CONTINUE PRINTLN
+%token NOT LPAREN RPAREN LCURL RCURL LTHIRD RTHIRD COMMA SEMICOLON INCOP DECOP ASSIGNOP 
+%token<symbolInfo> CONST_INT CONST_FLOAT LOGICOP RELOP ADDOP BITOP MULOP ID
+
+%type <symbolInfo> program unit func_prototype func_declaration func_definition parameter_list compound_statement var_declaration
+type_specifier declaration_list statements statement expression_statement variable expression
+logic_expression rel_expression simple_expression term unary_expression factor argument_list arguments
+
+%destructor {delete $$ ; } <symbolInfo>
 
 %left COMMA
 %right ASSIGNOP
@@ -57,13 +78,14 @@ void logFileWriter(const string &left,const string &right){
 start : program
 	{
 		logFileWriter("start","program");
+		summaryWriter();
 	}
 	;
 
 program : program unit {
 	logFileWriter("program","program unit");
 }
-	| unit {logFileWriter("program","program unit");}
+	| unit {logFileWriter("program","unit");}
 	;
 	
 unit : var_declaration {
@@ -123,7 +145,7 @@ declaration_list : declaration_list COMMA ID {
 	logFileWriter("declaration_list","declaration_list COMMA ID");
 }
  		  | declaration_list COMMA ID LTHIRD CONST_INT RTHIRD {
-			logFileWriter("declaration_list","declaration_list COMMA ID LTHIRD CONST_INT RTHIRD");
+			logFileWriter("declaration_list","declaration_list COMMA ID LSQUARE CONST_INT RSQUARE");
 		  }
  		  | ID {
 			logFileWriter("declaration_list","ID");
