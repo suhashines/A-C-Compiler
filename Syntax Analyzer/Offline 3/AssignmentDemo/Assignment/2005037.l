@@ -37,6 +37,7 @@ string lexeme ;
 
 extern SymbolTable symbolTable ;
 extern list<pair<string,string>> parameters;
+extern void printScopeTable() ;
 
 string toUpper(const string &str){
 
@@ -398,7 +399,8 @@ println {
                 tokenFileWriter("RCURL",yytext);
                 if(globalIndent!=0)
                     globalIndent -- ;
-                symbolTable.exitScope();
+               // printScopeTable();
+                //symbolTable.exitScope();
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"RCURL",line);
                 return RCURL;
             }

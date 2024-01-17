@@ -1,4 +1,9 @@
-int main(){
-    int a ;
-    float a ;
+int x,y,z; float a;
+
+int var(int a,int b);
+
+int foo3(int a, int b);
+
+int func(int c, int d){
+	return 7;
 }

@@ -86,18 +86,19 @@ void printParseTree(ParseTreeNode *root, int space)
 
 void printScopeTable(){
 	cout<<symbolTable.printAll()<<endl;
+	logFile<<symbolTable.printAll();
 }
 
 
 /* necessary functions for recognizing semantic errors */
 
 
-void handleIdDeclaration(ParseTreeNode* node){
+void handleIdDeclaration(ParseTreeNode* node,int size){
 	//extracting information 
 
 	string lexeme = node->lexeme ;
 	string token = node->token;
-	string idType = varType ;
+	string idType = toUpper(varType) ;
 	int lineCount = node->startLine;
 
 	//looking for error 
@@ -305,7 +306,7 @@ func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON {
 	funcName = $2->lexeme ;
 	int discoveryLine = $2->startLine;
 
-	funcReturnType = $1->lastSymbol->getType();
+	funcReturnType = $1->lastFoundLexeme ;
 	handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
 
 }
@@ -321,25 +322,34 @@ func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON {
 			//at this point varType = returnType ;
 	         funcName = $2->lexeme ;
 	         int discoveryLine = $2->startLine;
-			 funcReturnType = $1->lastSymbol->getType();
+			 funcReturnType = $1->lastFoundLexeme ;
 	        handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
 		}
 		;
 		 
 func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement {
 	logFileWriter("func_definition","type_specifier ID LPAREN parameter_list RPAREN compound_statement");
-
+   
     $$ = new ParseTreeNode("func_definition");
+	 
 	$$->addChild($1);
+	cout<<"child 1 inserted"<<endl;
 	$$->addChild($2);
+	//cout<<"Let's see child 2 "<<$2->lexeme<<endl;
+	cout<<"child 2 inserted"<<endl;
 	$$->addChild($3);
+	cout<<"child 3 inserted"<<endl;
 	$$->addChild($4);
-	$$->addChild($5);
+	cout<<"child 4 inserted"<<endl;
+    $$->addChild($5);
+	cout<<"child 5 inserted"<<endl;
 	$$->addChild($6);
-
+	cout<<"child 6 inserted"<<endl;
+    
 	funcName = $2->lexeme ;
 	int discoveryLine = $2->startLine;
-	funcReturnType = $1->lastSymbol->getType();
+	funcReturnType = $1->lastFoundLexeme ;
+	cout<<"My return type is "<<funcReturnType<<endl;
 	handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
 
 	
@@ -355,7 +365,8 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statem
 		
 		    funcName = $2->lexeme ;
 	        int discoveryLine = $2->startLine;
-	        funcReturnType = $1->lastSymbol->getType();
+	        funcReturnType = $1->lastFoundLexeme ;
+			cout<<"My return type is "<<funcReturnType<<endl;
 	        handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
 
 		}
@@ -412,13 +423,16 @@ compound_statement : LCURL statements RCURL {
 	$$->addChild($1);
 	$$->addChild($2);
 	$$->addChild($3);
+	printScopeTable();
+	symbolTable.exitScope();
 }
  		    | LCURL RCURL {
 				logFileWriter("compound_statement","LCURL RCURL");
 			    $$ = new ParseTreeNode("compound_statement");
 				$$->addChild($1);
 				$$->addChild($2);
-		
+		        printScopeTable();
+	            symbolTable.exitScope();
 			}
  		    ;
  		    
@@ -457,7 +471,7 @@ type_specifier	: INT  {
 declaration_list : declaration_list COMMA ID {
 	logFileWriter("declaration_list","declaration_list COMMA ID");
 	
-	handleIdDeclaration($3);
+	handleIdDeclaration($3,-1);
 
 	$$ = new ParseTreeNode("declaration_list");
 
@@ -476,11 +490,14 @@ declaration_list : declaration_list COMMA ID {
 		    $$->addChild($4);
 		    $$->addChild($5);
 		    $$->addChild($6);
+
+			int size = stoi($5->lexeme) ;
+            handleIdDeclaration($3,size);
 			
 		  }
  		  | ID {
 			logFileWriter("declaration_list","ID");
-			handleIdDeclaration($1);
+			handleIdDeclaration($1,-1); // -1 indicating that it's not an array
 
 			$$ = new ParseTreeNode("declaration_list");
 			$$->addChild($1);
@@ -493,6 +510,9 @@ declaration_list : declaration_list COMMA ID {
 			$$->addChild($2);
 			$$->addChild($3);
 			$$->addChild($4);
+
+			int size = stoi($3->lexeme) ;
+            handleIdDeclaration($1,size);
 		  }
  		  ;
  		  
@@ -583,7 +603,7 @@ statement : var_declaration {
 	  }
 	  ;
 	  
-expression_statement 	: SEMICOLON	{
+expression_statement : SEMICOLON	{
 	logFileWriter("expression_statement","SEMICOLON");
     $$ = new ParseTreeNode("expression_statement");
 	$$->addChild($1);

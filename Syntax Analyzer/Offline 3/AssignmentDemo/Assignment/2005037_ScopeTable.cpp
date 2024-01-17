@@ -225,7 +225,6 @@ std::string getTableString()
     for (int i = 0; i < bucket; i++)
     {
         
-
         SymbolInfo *curr = arr[i];
 
         if (curr == nullptr)
@@ -234,16 +233,33 @@ std::string getTableString()
             continue;
         }
 
-        tableString += "\t" + std::to_string(i + 1);
+        tableString += "\t" + std::to_string(i + 1)+"-->";
 
         while (curr != nullptr)
-        {
-            tableString += " --> (" + curr->getName() + "," + curr->getType() + ")";
-            curr = curr->next;
-        }
+        {     tableString += " <" + curr->getName() + "," ;
 
-        tableString += "\n";
-    }
+              if(curr->isFunction){
+
+               FunctionInfo * currFunc = (FunctionInfo*)curr;
+              
+              tableString += "FUNCTION,"+currFunc->getReturnType();
+              
+              }else{
+                IdInfo* currId = (IdInfo*)curr;
+                if(currId->size!=-1){
+                    //this is an array
+                    tableString+= "ARRAY";
+                }else{
+                    //this is an identifier
+                    tableString += currId->idType ;
+                }
+              }
+              tableString += ">";
+              curr = curr->next;
+        }
+    
+            tableString += "\n";
+        }
 
     return tableString;
 }

@@ -108,18 +108,19 @@ void printParseTree(ParseTreeNode *root, int space)
 
 void printScopeTable(){
 	cout<<symbolTable.printAll()<<endl;
+	logFile<<symbolTable.printAll();
 }
 
 
 /* necessary functions for recognizing semantic errors */
 
 
-void handleIdDeclaration(ParseTreeNode* node){
+void handleIdDeclaration(ParseTreeNode* node,int size){
 	/*extracting information */
 
 	string lexeme = node->lexeme ;
 	string token = node->token;
-	string idType = varType ;
+	string idType = toUpper(varType) ;
 	int lineCount = node->startLine;
 
 	/*looking for error */
@@ -248,12 +249,12 @@ void handleFunctionDeclaration(const string&name,const string&returnType,int lin
 #endif
 #ifndef YYSTYPE_IS_DECLARED
 #define YYSTYPE_IS_DECLARED 1
-#line 225 "parser.y"
+#line 226 "parser.y"
 typedef union YYSTYPE{
 	ParseTreeNode* parseTreeNode;
 } YYSTYPE;
 #endif /* !YYSTYPE_IS_DECLARED */
-#line 257 "y.tab.c"
+#line 258 "y.tab.c"
 
 /* compatibility with bison */
 #ifdef YYPARSE_PARAM
@@ -742,7 +743,7 @@ static YYINT  *yylexp = 0;
 
 static YYINT  *yylexemes = 0;
 #endif /* YYBTYACC */
-#line 786 "parser.y"
+#line 806 "parser.y"
 int main(int argc,char *argv[])
 {
 	FILE *fp ;
@@ -771,7 +772,7 @@ int main(int argc,char *argv[])
 	return 0;
 }
 
-#line 775 "y.tab.c"
+#line 776 "y.tab.c"
 
 /* For use in generated program */
 #define yydepth (int)(yystack.s_mark - yystack.s_base)
@@ -1442,7 +1443,7 @@ yyreduce:
     switch (yyn)
     {
 case 1:
-#line 252 "parser.y"
+#line 253 "parser.y"
 	{
 		logFileWriter("start","program");
 		summaryWriter();
@@ -1451,59 +1452,59 @@ case 1:
 		printParseTree(yyval.parseTreeNode,0);
 		printScopeTable();
 	}
-#line 1455 "y.tab.c"
+#line 1456 "y.tab.c"
 break;
 case 2:
-#line 262 "parser.y"
+#line 263 "parser.y"
 	{
 	logFileWriter("program","program unit");
 	yyval.parseTreeNode = new ParseTreeNode("program");
 	yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 }
-#line 1465 "y.tab.c"
+#line 1466 "y.tab.c"
 break;
 case 3:
-#line 268 "parser.y"
+#line 269 "parser.y"
 	{logFileWriter("program","unit");
 	
 	yyval.parseTreeNode = new ParseTreeNode("program");
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	
 	}
-#line 1475 "y.tab.c"
+#line 1476 "y.tab.c"
 break;
 case 4:
-#line 276 "parser.y"
+#line 277 "parser.y"
 	{
 	logFileWriter("unit","var_declaration");
 	yyval.parseTreeNode = new ParseTreeNode("unit");
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 }
-#line 1484 "y.tab.c"
+#line 1485 "y.tab.c"
 break;
 case 5:
-#line 281 "parser.y"
+#line 282 "parser.y"
 	{
 		logFileWriter("unit","func_declaration");
 		yyval.parseTreeNode = new ParseTreeNode("unit");
 	    yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		definingFunction= false ;
 	 }
-#line 1494 "y.tab.c"
+#line 1495 "y.tab.c"
 break;
 case 6:
-#line 287 "parser.y"
+#line 288 "parser.y"
 	{
 		logFileWriter("unit","func_definition");
 		yyval.parseTreeNode = new ParseTreeNode("unit");
 	    yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		definingFunction= true;
 	 }
-#line 1504 "y.tab.c"
+#line 1505 "y.tab.c"
 break;
 case 7:
-#line 295 "parser.y"
+#line 296 "parser.y"
 	{
 	logFileWriter("func_declaration","type_specifier ID LPAREN parameter_list RPAREN SEMICOLON");
     yyval.parseTreeNode = new ParseTreeNode("func_declaration");
@@ -1517,14 +1518,14 @@ case 7:
 	funcName = yystack.l_mark[-4].parseTreeNode->lexeme ;
 	int discoveryLine = yystack.l_mark[-4].parseTreeNode->startLine;
 
-	funcReturnType = yystack.l_mark[-5].parseTreeNode->lastSymbol->getType();
+	funcReturnType = yystack.l_mark[-5].parseTreeNode->lastFoundLexeme ;
 	handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
 
 }
-#line 1525 "y.tab.c"
+#line 1526 "y.tab.c"
 break;
 case 8:
-#line 312 "parser.y"
+#line 313 "parser.y"
 	{
 			logFileWriter("func_declaration","type_specifier ID LPAREN RPAREN SEMICOLON");
 		    yyval.parseTreeNode = new ParseTreeNode("func_declaration");
@@ -1537,35 +1538,44 @@ case 8:
 			/*at this point varType = returnType ;*/
 	         funcName = yystack.l_mark[-3].parseTreeNode->lexeme ;
 	         int discoveryLine = yystack.l_mark[-3].parseTreeNode->startLine;
-			 funcReturnType = yystack.l_mark[-4].parseTreeNode->lastSymbol->getType();
+			 funcReturnType = yystack.l_mark[-4].parseTreeNode->lastFoundLexeme ;
 	        handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
 		}
-#line 1544 "y.tab.c"
+#line 1545 "y.tab.c"
 break;
 case 9:
-#line 329 "parser.y"
+#line 330 "parser.y"
 	{
 	logFileWriter("func_definition","type_specifier ID LPAREN parameter_list RPAREN compound_statement");
-
+   
     yyval.parseTreeNode = new ParseTreeNode("func_definition");
+	 
 	yyval.parseTreeNode->addChild(yystack.l_mark[-5].parseTreeNode);
+	cout<<"child 1 inserted"<<endl;
 	yyval.parseTreeNode->addChild(yystack.l_mark[-4].parseTreeNode);
+	/*cout<<"Let's see child 2 "<<$2->lexeme<<endl;*/
+	cout<<"child 2 inserted"<<endl;
 	yyval.parseTreeNode->addChild(yystack.l_mark[-3].parseTreeNode);
+	cout<<"child 3 inserted"<<endl;
 	yyval.parseTreeNode->addChild(yystack.l_mark[-2].parseTreeNode);
-	yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
+	cout<<"child 4 inserted"<<endl;
+    yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
+	cout<<"child 5 inserted"<<endl;
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
-
+	cout<<"child 6 inserted"<<endl;
+    
 	funcName = yystack.l_mark[-4].parseTreeNode->lexeme ;
 	int discoveryLine = yystack.l_mark[-4].parseTreeNode->startLine;
-	funcReturnType = yystack.l_mark[-5].parseTreeNode->lastSymbol->getType();
+	funcReturnType = yystack.l_mark[-5].parseTreeNode->lastFoundLexeme ;
+	cout<<"My return type is "<<funcReturnType<<endl;
 	handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
 
 	
 }
-#line 1566 "y.tab.c"
+#line 1576 "y.tab.c"
 break;
 case 10:
-#line 347 "parser.y"
+#line 357 "parser.y"
 	{
 			logFileWriter("func_definition","type_specifier ID LPAREN RPAREN compound_statement");
 		    yyval.parseTreeNode = new ParseTreeNode("func_definition");
@@ -1577,14 +1587,15 @@ case 10:
 		
 		    funcName = yystack.l_mark[-3].parseTreeNode->lexeme ;
 	        int discoveryLine = yystack.l_mark[-3].parseTreeNode->startLine;
-	        funcReturnType = yystack.l_mark[-4].parseTreeNode->lastSymbol->getType();
+	        funcReturnType = yystack.l_mark[-4].parseTreeNode->lastFoundLexeme ;
+			cout<<"My return type is "<<funcReturnType<<endl;
 	        handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
 
 		}
-#line 1585 "y.tab.c"
+#line 1596 "y.tab.c"
 break;
 case 11:
-#line 365 "parser.y"
+#line 376 "parser.y"
 	{
 	logFileWriter("parameter_list","parameter_list COMMA type_specifier ID");
 	yyval.parseTreeNode = new ParseTreeNode("parameter_list");
@@ -1599,10 +1610,10 @@ case 11:
     
 
 	}
-#line 1603 "y.tab.c"
+#line 1614 "y.tab.c"
 break;
 case 12:
-#line 379 "parser.y"
+#line 390 "parser.y"
 	{
 			logFileWriter("parameter_list","parameter_list COMMA type_specifier");
 			yyval.parseTreeNode = new ParseTreeNode("parameter_list");
@@ -1613,10 +1624,10 @@ case 12:
 			parameters.push_back(make_pair(toUpper(varType),""));
 
 			}
-#line 1617 "y.tab.c"
+#line 1628 "y.tab.c"
 break;
 case 13:
-#line 389 "parser.y"
+#line 400 "parser.y"
 	{
 			logFileWriter("parameter_list","type_specifier ID");
 			yyval.parseTreeNode = new ParseTreeNode("parameter_list");
@@ -1628,42 +1639,45 @@ case 13:
 			parameters.push_back(make_pair(toUpper(varType),paramName));
 
 			}
-#line 1632 "y.tab.c"
+#line 1643 "y.tab.c"
 break;
 case 14:
-#line 400 "parser.y"
+#line 411 "parser.y"
 	{
 			logFileWriter("parameter_list","type_specifier");
 			yyval.parseTreeNode = new ParseTreeNode("parameter_list");
 			yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 			parameters.push_back(make_pair(toUpper(varType),""));
 			}
-#line 1642 "y.tab.c"
+#line 1653 "y.tab.c"
 break;
 case 15:
-#line 409 "parser.y"
+#line 420 "parser.y"
 	{
 	logFileWriter("compound_statement","LCURL statements RCURL");
     yyval.parseTreeNode = new ParseTreeNode("compound_statement");
 	yyval.parseTreeNode->addChild(yystack.l_mark[-2].parseTreeNode);
 	yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
+	printScopeTable();
+	symbolTable.exitScope();
 }
-#line 1653 "y.tab.c"
+#line 1666 "y.tab.c"
 break;
 case 16:
-#line 416 "parser.y"
+#line 429 "parser.y"
 	{
 				logFileWriter("compound_statement","LCURL RCURL");
 			    yyval.parseTreeNode = new ParseTreeNode("compound_statement");
 				yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 				yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
-		
+		        printScopeTable();
+	            symbolTable.exitScope();
 			}
-#line 1664 "y.tab.c"
+#line 1678 "y.tab.c"
 break;
 case 17:
-#line 425 "parser.y"
+#line 439 "parser.y"
 	{logFileWriter("var_declaration","type_specifier declaration_list SEMICOLON");
 
 yyval.parseTreeNode = new ParseTreeNode("var_declaration");
@@ -1672,10 +1686,10 @@ yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 
 }
-#line 1676 "y.tab.c"
+#line 1690 "y.tab.c"
 break;
 case 18:
-#line 435 "parser.y"
+#line 449 "parser.y"
 	{
 							logFileWriter("type_specifier","INT");
 							varType = "int" ;
@@ -1684,34 +1698,34 @@ case 18:
 
 
 					   }
-#line 1688 "y.tab.c"
+#line 1702 "y.tab.c"
 break;
 case 19:
-#line 443 "parser.y"
+#line 457 "parser.y"
 	{
 							logFileWriter("type_specifier", "FLOAT");
 							varType = "float" ;
 							yyval.parseTreeNode = new ParseTreeNode("type_specifier");
 							yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 					   }
-#line 1698 "y.tab.c"
+#line 1712 "y.tab.c"
 break;
 case 20:
-#line 449 "parser.y"
+#line 463 "parser.y"
 	{
 							logFileWriter("type_specifier", "VOID");
 							varType = "void" ;
 							yyval.parseTreeNode = new ParseTreeNode("type_specifier");
 							yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		}
-#line 1708 "y.tab.c"
+#line 1722 "y.tab.c"
 break;
 case 21:
-#line 457 "parser.y"
+#line 471 "parser.y"
 	{
 	logFileWriter("declaration_list","declaration_list COMMA ID");
 	
-	handleIdDeclaration(yystack.l_mark[0].parseTreeNode);
+	handleIdDeclaration(yystack.l_mark[0].parseTreeNode,-1);
 
 	yyval.parseTreeNode = new ParseTreeNode("declaration_list");
 
@@ -1721,10 +1735,10 @@ case 21:
 	
 
 }
-#line 1725 "y.tab.c"
+#line 1739 "y.tab.c"
 break;
 case 22:
-#line 470 "parser.y"
+#line 484 "parser.y"
 	{
 			logFileWriter("declaration_list","declaration_list COMMA ID LSQUARE CONST_INT RSQUARE");
 			yyval.parseTreeNode = new ParseTreeNode("declaration_list");
@@ -1734,24 +1748,27 @@ case 22:
 		    yyval.parseTreeNode->addChild(yystack.l_mark[-2].parseTreeNode);
 		    yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		    yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
+
+			int size = stoi(yystack.l_mark[-1].parseTreeNode->lexeme) ;
+            handleIdDeclaration(yystack.l_mark[-3].parseTreeNode,size);
 			
 		  }
-#line 1740 "y.tab.c"
+#line 1757 "y.tab.c"
 break;
 case 23:
-#line 481 "parser.y"
+#line 498 "parser.y"
 	{
 			logFileWriter("declaration_list","ID");
-			handleIdDeclaration(yystack.l_mark[0].parseTreeNode);
+			handleIdDeclaration(yystack.l_mark[0].parseTreeNode,-1); /* -1 indicating that it's not an array*/
 
 			yyval.parseTreeNode = new ParseTreeNode("declaration_list");
 			yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 			
 			}
-#line 1752 "y.tab.c"
+#line 1769 "y.tab.c"
 break;
 case 24:
-#line 489 "parser.y"
+#line 506 "parser.y"
 	{
 			logFileWriter("declaration_list","ID LTHIRD CONST_INT RTHIRD");
 			yyval.parseTreeNode = new ParseTreeNode("declaration_list");
@@ -1759,19 +1776,22 @@ case 24:
 			yyval.parseTreeNode->addChild(yystack.l_mark[-2].parseTreeNode);
 			yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 			yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
+
+			int size = stoi(yystack.l_mark[-1].parseTreeNode->lexeme) ;
+            handleIdDeclaration(yystack.l_mark[-3].parseTreeNode,size);
 		  }
-#line 1764 "y.tab.c"
+#line 1784 "y.tab.c"
 break;
 case 25:
-#line 499 "parser.y"
+#line 519 "parser.y"
 	{logFileWriter("statements","statement");
     yyval.parseTreeNode = new ParseTreeNode("statements");
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 }
-#line 1772 "y.tab.c"
+#line 1792 "y.tab.c"
 break;
 case 26:
-#line 503 "parser.y"
+#line 523 "parser.y"
 	{
 		logFileWriter("statements","statements statement");
 	
@@ -1779,38 +1799,38 @@ case 26:
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);   
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);   
 	   }
-#line 1783 "y.tab.c"
+#line 1803 "y.tab.c"
 break;
 case 27:
-#line 512 "parser.y"
+#line 532 "parser.y"
 	{
 	logFileWriter("statement","var_declaration");
     yyval.parseTreeNode = new ParseTreeNode("statement");
     yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 }
-#line 1792 "y.tab.c"
+#line 1812 "y.tab.c"
 break;
 case 28:
-#line 517 "parser.y"
+#line 537 "parser.y"
 	{
 		logFileWriter("statement","expression_statement");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	  }
-#line 1801 "y.tab.c"
+#line 1821 "y.tab.c"
 break;
 case 29:
-#line 522 "parser.y"
+#line 542 "parser.y"
 	{
 		logFileWriter("statement","compound_statement");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		symbolTable.exitScope();
 	  }
-#line 1811 "y.tab.c"
+#line 1831 "y.tab.c"
 break;
 case 30:
-#line 528 "parser.y"
+#line 548 "parser.y"
 	{
 		logFileWriter("statement","FOR LPAREN expression_statement expression_statement expression RPAREN statement");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
@@ -1822,10 +1842,10 @@ case 30:
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	  }
-#line 1826 "y.tab.c"
+#line 1846 "y.tab.c"
 break;
 case 31:
-#line 539 "parser.y"
+#line 559 "parser.y"
 	{
 		logFileWriter("statement","IF LPAREN expression RPAREN statement");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
@@ -1835,10 +1855,10 @@ case 31:
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	  }
-#line 1839 "y.tab.c"
+#line 1859 "y.tab.c"
 break;
 case 32:
-#line 548 "parser.y"
+#line 568 "parser.y"
 	{
 		logFileWriter("statement","IF LAPAREN expression RPAREN statement ELSE statement");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
@@ -1850,10 +1870,10 @@ case 32:
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	  }
-#line 1854 "y.tab.c"
+#line 1874 "y.tab.c"
 break;
 case 33:
-#line 559 "parser.y"
+#line 579 "parser.y"
 	{
 		logFileWriter("statement","WHILE LPAREN expression RPAREN statement");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
@@ -1863,10 +1883,10 @@ case 33:
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	  }
-#line 1867 "y.tab.c"
+#line 1887 "y.tab.c"
 break;
 case 34:
-#line 568 "parser.y"
+#line 588 "parser.y"
 	{
 		logFileWriter("statement","PRINTLN LPAREN ID RPAREN SEMICOLON");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
@@ -1876,10 +1896,10 @@ case 34:
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	  }
-#line 1880 "y.tab.c"
+#line 1900 "y.tab.c"
 break;
 case 35:
-#line 577 "parser.y"
+#line 597 "parser.y"
 	{
 		logFileWriter("statement","RETURN expression SEMICOLON");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
@@ -1887,20 +1907,20 @@ case 35:
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	  }
-#line 1891 "y.tab.c"
+#line 1911 "y.tab.c"
 break;
 case 36:
-#line 586 "parser.y"
+#line 606 "parser.y"
 	{
 	logFileWriter("expression_statement","SEMICOLON");
     yyval.parseTreeNode = new ParseTreeNode("expression_statement");
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 
 }
-#line 1901 "y.tab.c"
+#line 1921 "y.tab.c"
 break;
 case 37:
-#line 592 "parser.y"
+#line 612 "parser.y"
 	{
 				logFileWriter("expression_statement","expression SEMICOLON");
 			    yyval.parseTreeNode = new ParseTreeNode("expression_statement");
@@ -1908,20 +1928,20 @@ case 37:
 				yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 			
 			}
-#line 1912 "y.tab.c"
+#line 1932 "y.tab.c"
 break;
 case 38:
-#line 601 "parser.y"
+#line 621 "parser.y"
 	{logFileWriter("variable","ID");
 
 yyval.parseTreeNode = new ParseTreeNode("variable");
 yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 
 }
-#line 1922 "y.tab.c"
+#line 1942 "y.tab.c"
 break;
 case 39:
-#line 607 "parser.y"
+#line 627 "parser.y"
 	{
 		logFileWriter("variable","ID LTHIRD expression RTHIRD");
 		
@@ -1932,19 +1952,19 @@ case 39:
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		
 		}
-#line 1936 "y.tab.c"
+#line 1956 "y.tab.c"
 break;
 case 40:
-#line 619 "parser.y"
+#line 639 "parser.y"
 	{logFileWriter("expression","logic_expression");
  yyval.parseTreeNode = new ParseTreeNode("expression");
  yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
  
  }
-#line 1945 "y.tab.c"
+#line 1965 "y.tab.c"
 break;
 case 41:
-#line 624 "parser.y"
+#line 644 "parser.y"
 	{
 		logFileWriter("expression","variable ASSIGNOP logic_expression");
 		yyval.parseTreeNode = new ParseTreeNode("expression");
@@ -1953,20 +1973,20 @@ case 41:
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		
 		}
-#line 1957 "y.tab.c"
+#line 1977 "y.tab.c"
 break;
 case 42:
-#line 634 "parser.y"
+#line 654 "parser.y"
 	{
 	logFileWriter("logic_expression","rel_expression");
     yyval.parseTreeNode = new ParseTreeNode("logic_expression");
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 
 }
-#line 1967 "y.tab.c"
+#line 1987 "y.tab.c"
 break;
 case 43:
-#line 640 "parser.y"
+#line 660 "parser.y"
 	{
 			logFileWriter("logic_expression","rel_expression LOGICOP rel_expression");
 		     yyval.parseTreeNode = new ParseTreeNode("logic_expression");
@@ -1975,19 +1995,19 @@ case 43:
 			 yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		 
 		 }
-#line 1979 "y.tab.c"
+#line 1999 "y.tab.c"
 break;
 case 44:
-#line 650 "parser.y"
+#line 670 "parser.y"
 	{
 	logFileWriter("rel_expression","simple_expression");
     yyval.parseTreeNode=new ParseTreeNode("rel_expression");
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 }
-#line 1988 "y.tab.c"
+#line 2008 "y.tab.c"
 break;
 case 45:
-#line 655 "parser.y"
+#line 675 "parser.y"
 	{
 			logFileWriter("rel_expression","simple_expression RELOP simple_expression");
 		    yyval.parseTreeNode=new ParseTreeNode("rel_expression");
@@ -1995,19 +2015,19 @@ case 45:
 			yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 			yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		}
-#line 1999 "y.tab.c"
+#line 2019 "y.tab.c"
 break;
 case 46:
-#line 664 "parser.y"
+#line 684 "parser.y"
 	{logFileWriter("simple_expression","term");
 yyval.parseTreeNode = new ParseTreeNode("simple_expression");
 yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 
 }
-#line 2008 "y.tab.c"
+#line 2028 "y.tab.c"
 break;
 case 47:
-#line 669 "parser.y"
+#line 689 "parser.y"
 	{
 			logFileWriter("simple_expression","simple_expression ADDOP term");
 			yyval.parseTreeNode = new ParseTreeNode("simple_expression");
@@ -2016,20 +2036,20 @@ case 47:
 			yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 
 			}
-#line 2020 "y.tab.c"
+#line 2040 "y.tab.c"
 break;
 case 48:
-#line 679 "parser.y"
+#line 699 "parser.y"
 	{
 	logFileWriter("term","unary_expression");
 	yyval.parseTreeNode = new ParseTreeNode("term");
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	
 	}
-#line 2030 "y.tab.c"
+#line 2050 "y.tab.c"
 break;
 case 49:
-#line 685 "parser.y"
+#line 705 "parser.y"
 	{
 		logFileWriter("term","term MULOP unary_expression");
 		yyval.parseTreeNode = new ParseTreeNode("term");
@@ -2038,49 +2058,49 @@ case 49:
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		
 		}
-#line 2042 "y.tab.c"
+#line 2062 "y.tab.c"
 break;
 case 50:
-#line 695 "parser.y"
+#line 715 "parser.y"
 	{
 	logFileWriter("unary_expression","ADDOP unary_expression");
 	yyval.parseTreeNode = new ParseTreeNode("unary_expression");
 	yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	}
-#line 2052 "y.tab.c"
+#line 2072 "y.tab.c"
 break;
 case 51:
-#line 701 "parser.y"
+#line 721 "parser.y"
 	{
 			logFileWriter("unary_expression","NOT unary_expression");
 			yyval.parseTreeNode = new ParseTreeNode("unary_expression");
 			yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 			yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 			}
-#line 2062 "y.tab.c"
+#line 2082 "y.tab.c"
 break;
 case 52:
-#line 707 "parser.y"
+#line 727 "parser.y"
 	{
 			logFileWriter("unary_expression","factor");
 			yyval.parseTreeNode = new ParseTreeNode("unary_expression");
 			yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 			}
-#line 2071 "y.tab.c"
+#line 2091 "y.tab.c"
 break;
 case 53:
-#line 714 "parser.y"
+#line 734 "parser.y"
 	{
 	logFileWriter("factor","variable");
 	yyval.parseTreeNode = new ParseTreeNode("factor");
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	
 	}
-#line 2081 "y.tab.c"
+#line 2101 "y.tab.c"
 break;
 case 54:
-#line 720 "parser.y"
+#line 740 "parser.y"
 	{
 		logFileWriter("factor","ID LPAREN argument_list RPAREN");
 		yyval.parseTreeNode = new ParseTreeNode("factor");
@@ -2090,10 +2110,10 @@ case 54:
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		
 		}
-#line 2094 "y.tab.c"
+#line 2114 "y.tab.c"
 break;
 case 55:
-#line 729 "parser.y"
+#line 749 "parser.y"
 	{
 		logFileWriter("factor","LPAREN expression RPAREN");
 		yyval.parseTreeNode = new ParseTreeNode("factor");
@@ -2101,59 +2121,59 @@ case 55:
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		}
-#line 2105 "y.tab.c"
+#line 2125 "y.tab.c"
 break;
 case 56:
-#line 736 "parser.y"
+#line 756 "parser.y"
 	{
 		logFileWriter("factor","CONST_INT");
 		yyval.parseTreeNode = new ParseTreeNode("factor");
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		
 		}
-#line 2115 "y.tab.c"
+#line 2135 "y.tab.c"
 break;
 case 57:
-#line 742 "parser.y"
+#line 762 "parser.y"
 	{
 		logFileWriter("factor","CONST_FLOAT");
 		yyval.parseTreeNode = new ParseTreeNode("factor");
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		}
-#line 2124 "y.tab.c"
+#line 2144 "y.tab.c"
 break;
 case 58:
-#line 747 "parser.y"
+#line 767 "parser.y"
 	{
 		logFileWriter("factor","variable INCOP");
 		yyval.parseTreeNode = new ParseTreeNode("factor");
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		}
-#line 2134 "y.tab.c"
+#line 2154 "y.tab.c"
 break;
 case 59:
-#line 753 "parser.y"
+#line 773 "parser.y"
 	{
 		logFileWriter("factor","variable DECOP");
 		yyval.parseTreeNode = new ParseTreeNode("factor");
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		}
-#line 2144 "y.tab.c"
+#line 2164 "y.tab.c"
 break;
 case 60:
-#line 761 "parser.y"
+#line 781 "parser.y"
 	{
 	logFileWriter("argument_list","arguments");
 	yyval.parseTreeNode = new ParseTreeNode("argument_list");
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 
 	}
-#line 2154 "y.tab.c"
+#line 2174 "y.tab.c"
 break;
 case 62:
-#line 770 "parser.y"
+#line 790 "parser.y"
 	{
 	logFileWriter("arguments","arguments COMMA logic_expression");
 	yyval.parseTreeNode = new ParseTreeNode("arguments");
@@ -2161,18 +2181,18 @@ case 62:
 	yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 }
-#line 2165 "y.tab.c"
+#line 2185 "y.tab.c"
 break;
 case 63:
-#line 777 "parser.y"
+#line 797 "parser.y"
 	{
 			logFileWriter("arguments","logic_expression");
 			yyval.parseTreeNode = new ParseTreeNode("arguments");
 			yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		  }
-#line 2174 "y.tab.c"
+#line 2194 "y.tab.c"
 break;
-#line 2176 "y.tab.c"
+#line 2196 "y.tab.c"
     default:
         break;
     }

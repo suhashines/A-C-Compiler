@@ -17,7 +17,7 @@ class ParseTreeNode{
 
     vector<ParseTreeNode*> children ;
     string nameList ;
-    SymbolInfo* lastSymbol ;
+    string lastFoundLexeme ;
 
     ParseTreeNode(const string &n){
         name = n ;
@@ -40,25 +40,25 @@ class ParseTreeNode{
 
 
     void addChild(ParseTreeNode* child){
-
+        cout<<"adding child "<<endl;
         startLine = min(startLine, child->startLine);
         endLine = max(endLine, child->endLine);
         string childName ;
 
         if(child->isLeaf){
+            cout<<"child is a leaf node"<<endl;
+            cout<<"lexeme "<<child->lexeme<<" token "<<child->token<<endl;
+
             childName = child->token ;
-            if(lastSymbol !=nullptr){
-            delete lastSymbol;
-            }
-         lastSymbol = new SymbolInfo(child->lexeme,child->token);
+            lastFoundLexeme = child->lexeme ;
         }else{
             childName = child->name ;
         }
         nameList += " "+childName ;
         //concatening children's name
-
+        cout<<"Current nameList "<<nameList<<endl;
         children.push_back(child);
-        
+        cout<<"children added successfully"<<endl;
     }
 
 

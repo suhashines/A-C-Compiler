@@ -1,1 +1,0 @@
-Line# 3: Conflicting types for 'a'

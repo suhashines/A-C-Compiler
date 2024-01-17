@@ -677,6 +677,7 @@ string lexeme ;
 
 extern SymbolTable symbolTable ;
 extern list<pair<string,string>> parameters;
+extern void printScopeTable() ;
 
 string toUpper(const string &str){
 
@@ -754,8 +755,8 @@ void endOfFile(){
 
 
 
-#line 758 "lex.yy.c"
 #line 759 "lex.yy.c"
+#line 760 "lex.yy.c"
 
 #define INITIAL 0
 #define CHAR_STATE 1
@@ -980,10 +981,10 @@ YY_DECL
 		}
 
 	{
-#line 156 "2005037.l"
+#line 157 "2005037.l"
 
 
-#line 987 "lex.yy.c"
+#line 988 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1044,7 +1045,7 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 158 "2005037.l"
+#line 159 "2005037.l"
 {   line++ ;
                BEGIN NEWLINE_STATE;
 }
@@ -1052,13 +1053,13 @@ YY_RULE_SETUP
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 162 "2005037.l"
+#line 163 "2005037.l"
 {line++ ;}
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 164 "2005037.l"
+#line 165 "2005037.l"
 {
             
             //cout<<"rule 2 at line "<<line<<" global: "<<globalIndent<<" read: "<<yytext[yyleng-1]<<endl;
@@ -1081,7 +1082,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 184 "2005037.l"
+#line 185 "2005037.l"
 {
          //cout<<"rule 1 at line "<<line<<" global: "<<globalIndent<<" read: "<<yytext[yyleng-1]<<endl;
          warning ++ ;
@@ -1092,12 +1093,12 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 193 "2005037.l"
+#line 194 "2005037.l"
 { }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 195 "2005037.l"
+#line 196 "2005037.l"
 {
  lexLogWriter(toUpper(yytext),yytext); 
  yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1106,7 +1107,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 200 "2005037.l"
+#line 201 "2005037.l"
 {
     lexLogWriter(toUpper(yytext),yytext);
     yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1114,7 +1115,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 205 "2005037.l"
+#line 206 "2005037.l"
 {
     lexLogWriter(toUpper(yytext),yytext);
     yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1122,7 +1123,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 210 "2005037.l"
+#line 211 "2005037.l"
 {
     lexLogWriter(toUpper(yytext),yytext);
     yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1130,7 +1131,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 215 "2005037.l"
+#line 216 "2005037.l"
 {
     lexLogWriter(toUpper(yytext),yytext);
     yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1138,7 +1139,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 219 "2005037.l"
+#line 220 "2005037.l"
 {
     lexLogWriter(toUpper(yytext),yytext);
     yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1146,7 +1147,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 223 "2005037.l"
+#line 224 "2005037.l"
 {
     lexLogWriter(toUpper(yytext),yytext);
     yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1154,7 +1155,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 227 "2005037.l"
+#line 228 "2005037.l"
 {
     lexLogWriter(toUpper(yytext),yytext);
     yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1162,7 +1163,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 231 "2005037.l"
+#line 232 "2005037.l"
 {
     lexLogWriter(toUpper(yytext),yytext); 
     yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1171,7 +1172,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 236 "2005037.l"
+#line 237 "2005037.l"
 {
     
     lexLogWriter(toUpper(yytext),yytext);
@@ -1181,7 +1182,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 242 "2005037.l"
+#line 243 "2005037.l"
 {
     lexLogWriter(toUpper(yytext),yytext);
     yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1190,7 +1191,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 247 "2005037.l"
+#line 248 "2005037.l"
 {
     lexLogWriter(toUpper(yytext),yytext);
     yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1199,7 +1200,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 252 "2005037.l"
+#line 253 "2005037.l"
 {
     lexLogWriter(toUpper(yytext),yytext);
     yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1208,7 +1209,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 257 "2005037.l"
+#line 258 "2005037.l"
 {
     lexLogWriter(toUpper(yytext),yytext);
     yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1217,7 +1218,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 262 "2005037.l"
+#line 263 "2005037.l"
 {
     lexLogWriter(toUpper(yytext),yytext); 
     yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1226,7 +1227,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 267 "2005037.l"
+#line 268 "2005037.l"
 {
     lexLogWriter(toUpper(yytext),yytext); 
     yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1235,7 +1236,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 272 "2005037.l"
+#line 273 "2005037.l"
 {
     lexLogWriter(toUpper(yytext),yytext); 
     yylval.parseTreeNode=new ParseTreeNode(yytext,toUpper(yytext),line);
@@ -1244,7 +1245,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 278 "2005037.l"
+#line 279 "2005037.l"
 {
                 lexLogWriter("CONST_INT",yytext);
                 tokenFileWriter("CONST_INT",yytext);
@@ -1255,7 +1256,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 287 "2005037.l"
+#line 288 "2005037.l"
 {
                 lexLogWriter("CONST_FLOAT",yytext); 
                 tokenFileWriter("CONST_FLOAT",yytext);
@@ -1266,7 +1267,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 296 "2005037.l"
+#line 297 "2005037.l"
 {
                 lexLogWriter("ID",yytext) ;
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"ID",line);
@@ -1278,14 +1279,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 305 "2005037.l"
+#line 306 "2005037.l"
 {
                errorWriter("INVALID_ID_SUFFIX_NUM_PREFIX",yytext);  
                 }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 308 "2005037.l"
+#line 309 "2005037.l"
 {
 
             errorWriter("TOO_MANY_DECIMAL_POINTS",yytext);
@@ -1293,14 +1294,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 313 "2005037.l"
+#line 314 "2005037.l"
 {
             errorWriter("ILLFORMED_NUMBER",yytext);
 }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 318 "2005037.l"
+#line 319 "2005037.l"
 {
                 lexLogWriter("ADDOP",yytext);
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"ADDOP",line);
@@ -1310,7 +1311,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 324 "2005037.l"
+#line 325 "2005037.l"
 {
                 lexLogWriter("MULOP",yytext);
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"MULOP",line);
@@ -1320,7 +1321,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 330 "2005037.l"
+#line 331 "2005037.l"
 {
                 lexLogWriter("INCOP",yytext);
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"INCOP",line);
@@ -1330,7 +1331,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 336 "2005037.l"
+#line 337 "2005037.l"
 {
                 lexLogWriter("DECOP",yytext);
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"DECOP",line);
@@ -1340,7 +1341,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 342 "2005037.l"
+#line 343 "2005037.l"
 {
                 lexLogWriter("RELOP",yytext);
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"RELOP",line);
@@ -1350,7 +1351,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 348 "2005037.l"
+#line 349 "2005037.l"
 {
                 lexLogWriter("ASSIGNOP",yytext);
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"ASSIGNOP",line);
@@ -1360,7 +1361,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 354 "2005037.l"
+#line 355 "2005037.l"
 {
                 lexLogWriter("LOGICOP",yytext);
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"LOGICOP",line);
@@ -1370,7 +1371,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 360 "2005037.l"
+#line 361 "2005037.l"
 {
                 lexLogWriter("BITOP",yytext);
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"BITOP",line);
@@ -1380,7 +1381,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 366 "2005037.l"
+#line 367 "2005037.l"
 {
                 lexLogWriter("NOT",yytext);
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"NOT",line);
@@ -1390,7 +1391,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 372 "2005037.l"
+#line 373 "2005037.l"
 {
                 lexLogWriter("LPAREN",yytext);
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"LPAREN",line);
@@ -1400,7 +1401,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 378 "2005037.l"
+#line 379 "2005037.l"
 {
                 lexLogWriter("RPAREN",yytext);
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"RPAREN",line);
@@ -1410,7 +1411,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 384 "2005037.l"
+#line 385 "2005037.l"
 {
                 lexLogWriter("LCURL",yytext);
                 tokenFileWriter("LCURL",yytext);
@@ -1426,20 +1427,21 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 396 "2005037.l"
+#line 397 "2005037.l"
 {
                 lexLogWriter("RCURL",yytext);
                 tokenFileWriter("RCURL",yytext);
                 if(globalIndent!=0)
                     globalIndent -- ;
-                symbolTable.exitScope();
+               // printScopeTable();
+                //symbolTable.exitScope();
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"RCURL",line);
                 return RCURL;
             }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 405 "2005037.l"
+#line 407 "2005037.l"
 {
                 lexLogWriter("LSQUARE",yytext);
                 tokenFileWriter("LSQUARE",yytext);
@@ -1449,7 +1451,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 411 "2005037.l"
+#line 413 "2005037.l"
 {
                 lexLogWriter("RSQUARE",yytext);
                 tokenFileWriter("RSQUARE",yytext);
@@ -1459,7 +1461,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 417 "2005037.l"
+#line 419 "2005037.l"
 {
                 lexLogWriter("COMMA",yytext);
                 tokenFileWriter("COMMA",yytext);
@@ -1469,7 +1471,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 423 "2005037.l"
+#line 425 "2005037.l"
 {
                 lexLogWriter("SEMICOLON",yytext);
                 tokenFileWriter("SEMICOLON",yytext);
@@ -1479,7 +1481,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 431 "2005037.l"
+#line 433 "2005037.l"
 {
     lexeme += yytext ;
     characterLiteral = "" ;
@@ -1489,7 +1491,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 438 "2005037.l"
+#line 440 "2005037.l"
 {
 
     //cout<<"ending char_state"<<endl;
@@ -1540,7 +1542,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 486 "2005037.l"
+#line 488 "2005037.l"
 {
    //cout<<"matching character "<<yytext<<endl;
     lexeme += yytext ;
@@ -1550,7 +1552,7 @@ YY_RULE_SETUP
 case 49:
 /* rule 49 can match eol */
 YY_RULE_SETUP
-#line 492 "2005037.l"
+#line 494 "2005037.l"
 {
     errorWriter("UNFINISHED_CONST_CHAR", lexeme);
     line++;
@@ -1560,7 +1562,7 @@ YY_RULE_SETUP
 }
 	YY_BREAK
 case YY_STATE_EOF(CHAR_STATE):
-#line 500 "2005037.l"
+#line 502 "2005037.l"
 {
         errorWriter("UNFINISHED_CONST_CHAR", lexeme);
         lexeme.clear();
@@ -1572,7 +1574,7 @@ case YY_STATE_EOF(CHAR_STATE):
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 509 "2005037.l"
+#line 511 "2005037.l"
 {   //cout<<"entering string_state"<<endl;
             tempLine = line ;
             characterLiteral = "";
@@ -1583,7 +1585,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 518 "2005037.l"
+#line 520 "2005037.l"
 {
           
                 lexeme += yytext ;
@@ -1602,7 +1604,7 @@ YY_RULE_SETUP
 case 52:
 /* rule 52 can match eol */
 YY_RULE_SETUP
-#line 533 "2005037.l"
+#line 535 "2005037.l"
 {
                         line++ ;
                         lexeme += yytext;
@@ -1611,7 +1613,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 539 "2005037.l"
+#line 541 "2005037.l"
 {    
                         string token ;
 
@@ -1633,7 +1635,7 @@ YY_RULE_SETUP
 case 54:
 /* rule 54 can match eol */
 YY_RULE_SETUP
-#line 557 "2005037.l"
+#line 559 "2005037.l"
 {
                             errorWriter("UNFINISHED_STRING",lexeme);
                             line ++ ;
@@ -1644,14 +1646,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 565 "2005037.l"
+#line 567 "2005037.l"
 {
             characterLiteral += yytext ;
             lexeme += yytext ;
         }
 	YY_BREAK
 case YY_STATE_EOF(STRING_STATE):
-#line 570 "2005037.l"
+#line 572 "2005037.l"
 {
                             
                             errorWriter("UNFINISHED_STRING",lexeme);
@@ -1664,7 +1666,7 @@ case YY_STATE_EOF(STRING_STATE):
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 579 "2005037.l"
+#line 581 "2005037.l"
 {
     lexLogWriter("SINGLE LINE COMMENT",yytext);
 
@@ -1673,7 +1675,7 @@ YY_RULE_SETUP
 case 57:
 /* rule 57 can match eol */
 YY_RULE_SETUP
-#line 584 "2005037.l"
+#line 586 "2005037.l"
 {
             tempLine = line ;
             lexeme += yytext ;
@@ -1684,7 +1686,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 592 "2005037.l"
+#line 594 "2005037.l"
 { 
 
             lexeme += yytext ;
@@ -1695,7 +1697,7 @@ YY_RULE_SETUP
 case 59:
 /* rule 59 can match eol */
 YY_RULE_SETUP
-#line 599 "2005037.l"
+#line 601 "2005037.l"
 {
         lexLogWriter("SINGLE LINE COMMENT",lexeme,tempLine);
         line ++ ;
@@ -1705,7 +1707,7 @@ YY_RULE_SETUP
 }
 	YY_BREAK
 case YY_STATE_EOF(SINGLE_LINE_COMMENT_STATE):
-#line 607 "2005037.l"
+#line 609 "2005037.l"
 {
     lexLogWriter("SINGLE LINE COMMENT",lexeme,tempLine);
     lexeme.clear();
@@ -1717,7 +1719,7 @@ case YY_STATE_EOF(SINGLE_LINE_COMMENT_STATE):
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 616 "2005037.l"
+#line 618 "2005037.l"
 {
         tempLine = line;
         lexeme = yytext ;
@@ -1727,7 +1729,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 623 "2005037.l"
+#line 625 "2005037.l"
 {
     lexeme += yytext ;
     lexLogWriter("MULTI LINE COMMENT",lexeme,tempLine);
@@ -1738,7 +1740,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 631 "2005037.l"
+#line 633 "2005037.l"
 {
     lexeme += yytext ;
 }
@@ -1746,14 +1748,14 @@ YY_RULE_SETUP
 case 63:
 /* rule 63 can match eol */
 YY_RULE_SETUP
-#line 635 "2005037.l"
+#line 637 "2005037.l"
 {
     line ++ ;
     lexeme += yytext ;
 }
 	YY_BREAK
 case YY_STATE_EOF(MULTILINE_COMMENT_STATE):
-#line 640 "2005037.l"
+#line 642 "2005037.l"
 {
     errorWriter("UNFINISHED_COMMENT",lexeme);
     lexeme.clear();
@@ -1765,7 +1767,7 @@ case YY_STATE_EOF(MULTILINE_COMMENT_STATE):
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(NEWLINE_STATE):
-#line 649 "2005037.l"
+#line 651 "2005037.l"
 {
             endOfFile();
             //summaryWriter();
@@ -1774,17 +1776,17 @@ case YY_STATE_EOF(NEWLINE_STATE):
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 655 "2005037.l"
+#line 657 "2005037.l"
 {
         errorWriter("UNRECOGNIZED_CHAR",yytext);
     } 
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 660 "2005037.l"
+#line 662 "2005037.l"
 ECHO;
 	YY_BREAK
-#line 1788 "lex.yy.c"
+#line 1790 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2790,7 +2792,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 660 "2005037.l"
+#line 662 "2005037.l"
 
 
 
