@@ -11,9 +11,9 @@
  */
 class SymbolTable {
 private:
-    int sizeOfScopeTables;
-    ScopeTable* rootScopeTable;
-    ScopeTable* currentScopeTable;
+    int sizeOfScopeTables; //bucket
+    ScopeTable* rootScopeTable; //head
+    ScopeTable* currentScopeTable; //tail
     std::list<FunctionInfo*> functions;
 public:
     /**

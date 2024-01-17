@@ -1,9 +1,28 @@
-start : program	<Line : 1-1>
- program : unit	<Line : 1-1>
-  unit : var_declaration	<Line : 1-1>
-   var_declaration : type_specifier declaration_list SEMICOLON	<Line : 1-1>
-    type_specifier : INT	<Line : 1-1>
+start : program 	<Line : 1-4>
+ program : unit 	<Line : 1-4>
+  unit : func_definition 	<Line : 1-4>
+   func_definition : type_specifier ID LPAREN RPAREN compound_statement 	<Line : 1-4>
+    type_specifier : INT 	<Line : 1-1>
      INT : int	<Line : 1>
-    declaration_list : ID	<Line : 1-1>
-     ID : x	<Line : 1>
-    SEMICOLON : ;	<Line : 1>
+    ID : main	<Line : 1>
+    LPAREN : (	<Line : 1>
+    RPAREN : )	<Line : 1>
+    compound_statement : LCURL statements RCURL 	<Line : 1-4>
+     LCURL : {	<Line : 1>
+     statements : statements statement 	<Line : 2-3>
+      statements : statement 	<Line : 2-2>
+       statement : var_declaration 	<Line : 2-2>
+        var_declaration : type_specifier declaration_list SEMICOLON 	<Line : 2-2>
+         type_specifier : INT 	<Line : 2-2>
+          INT : int	<Line : 2>
+         declaration_list : ID 	<Line : 2-2>
+          ID : a	<Line : 2>
+         SEMICOLON : ;	<Line : 2>
+      statement : var_declaration 	<Line : 3-3>
+       var_declaration : type_specifier declaration_list SEMICOLON 	<Line : 3-3>
+        type_specifier : FLOAT 	<Line : 3-3>
+         FLOAT : float	<Line : 3>
+        declaration_list : ID 	<Line : 3-3>
+         ID : a	<Line : 3>
+        SEMICOLON : ;	<Line : 3>
+     RCURL : }	<Line : 4>

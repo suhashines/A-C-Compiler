@@ -1,6 +1,7 @@
 #include<string>
 #include<vector>
 #include<limits.h>
+#include "2005037_SymbolTable.cpp"
 
 using namespace std;
 
@@ -16,6 +17,7 @@ class ParseTreeNode{
 
     vector<ParseTreeNode*> children ;
     string nameList ;
+    SymbolInfo* lastSymbol ;
 
     ParseTreeNode(const string &n){
         name = n ;
@@ -45,6 +47,10 @@ class ParseTreeNode{
 
         if(child->isLeaf){
             childName = child->token ;
+            if(lastSymbol !=nullptr){
+            delete lastSymbol;
+            }
+         lastSymbol = new SymbolInfo(child->lexeme,child->token);
         }else{
             childName = child->name ;
         }
@@ -52,6 +58,7 @@ class ParseTreeNode{
         //concatening children's name
 
         children.push_back(child);
+        
     }
 
 

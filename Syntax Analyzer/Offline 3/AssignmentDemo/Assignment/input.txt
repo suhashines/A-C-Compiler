@@ -1,1 +1,4 @@
-int x;
+int main(){
+    int a ;
+    float a ;
+}

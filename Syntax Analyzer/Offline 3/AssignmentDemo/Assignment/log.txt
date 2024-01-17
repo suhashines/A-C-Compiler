@@ -1,11 +1,32 @@
 Line# 1: Token <INT> Lexeme int found
 type_specifier : INT
-Line# 1: Token <ID> Lexeme x found
-Line# 1: Token <SEMICOLON> Lexeme ; found
+Line# 1: Token <ID> Lexeme main found
+Line# 1: Token <LPAREN> Lexeme ( found
+Line# 1: Token <RPAREN> Lexeme ) found
+Line# 1: Token <LCURL> Lexeme { found
+Line# 2: Warning, tab required but got space.
+Line# 2: Token <INT> Lexeme int found
+type_specifier : INT
+Line# 2: Token <ID> Lexeme a found
+Line# 2: Token <SEMICOLON> Lexeme ; found
 declaration_list : ID
 var_declaration : type_specifier declaration_list SEMICOLON
-unit : var_declaration
+statement : var_declaration
+statements : statement
+Line# 3: Warning, tab required but got space.
+Line# 3: Token <FLOAT> Lexeme float found
+type_specifier : FLOAT
+Line# 3: Token <ID> Lexeme a found
+Line# 3: Token <SEMICOLON> Lexeme ; found
+declaration_list : ID
+var_declaration : type_specifier declaration_list SEMICOLON
+statement : var_declaration
+statements : statements statement
+Line# 4: Token <RCURL> Lexeme } found
+compound_statement : LCURL statements RCURL
+func_definition : type_specifier ID LPAREN RPAREN compound_statement
+unit : func_definition
 program : unit
 start : program
-Total Lines: 1
-Total Errors: 0
+Total Lines: 4
+Total Errors: 1

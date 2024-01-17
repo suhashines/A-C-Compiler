@@ -40,13 +40,17 @@ int main()
     decl_list2->addChild(y);
 
     ParseTreeNode *comma2 = new ParseTreeNode("COMMA", ",", 3);
-    ParseTreeNode *z = new ParseTreeNode("ID", "z", 4);
+    ParseTreeNode *z = new ParseTreeNode("z", "ID", 4);
 
     ParseTreeNode *decl_list3 = new ParseTreeNode("decl_list");
 
     decl_list3->addChild(decl_list2);
     decl_list3->addChild(comma2);
     decl_list3->addChild(z);
+
+    cout<<"--------------------------------"<<endl;
+
+    cout<<decl_list3->lastSymbol->getName()<<endl;
 
     ParseTreeNode *int_keyword = new ParseTreeNode("INT", "int", 1);
     ParseTreeNode *type_spec = new ParseTreeNode("type_spec");

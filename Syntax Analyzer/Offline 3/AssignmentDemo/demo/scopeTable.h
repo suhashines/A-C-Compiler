@@ -11,9 +11,9 @@
  */
 class ScopeTable {
 private:
-    int size;
+    int size; 
     int totalChildren;
-    SymbolInfo **hashTable;
+    SymbolInfo **hashTable; //arr=hashTable
     ScopeTable *parentScope;
     std::string id;
 

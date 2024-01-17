@@ -35,7 +35,8 @@ ofstream tokenFile;
 string characterLiteral;
 string lexeme ;
 
-//SymbolTable table(10);
+extern SymbolTable symbolTable ;
+extern list<pair<string,string>> parameters;
 
 string toUpper(const string &str){
 
@@ -384,7 +385,12 @@ println {
                 lexLogWriter("LCURL",yytext);
                 tokenFileWriter("LCURL",yytext);
                 globalIndent++ ;
+                symbolTable.enterScope();
+                for(auto it=parameters.begin(); it!=parameters.end();it++){
+                    symbolTable.insert(it->second,"ID",it->first);
+                }
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"LCURL",line);
+                
                 return LCURL;
             }
 {RCURL}     {
@@ -392,6 +398,7 @@ println {
                 tokenFileWriter("RCURL",yytext);
                 if(globalIndent!=0)
                     globalIndent -- ;
+                symbolTable.exitScope();
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"RCURL",line);
                 return RCURL;
             }

@@ -74,8 +74,15 @@ class IdInfo : public SymbolInfo {
 
 public:
  string idType ;
+ int size ;
  IdInfo(const string&name, const string &type):SymbolInfo(name,"ID"){
     idType = type ;
+    size = -1 ;
+ }
+
+ IdInfo(const string&name,const string&type,int sz):SymbolInfo(name,"ID"){
+    idType = type;
+    size = sz;
  }
 
 

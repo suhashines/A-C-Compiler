@@ -230,7 +230,7 @@ std::string getTableString()
 
         if (curr == nullptr)
         {
-            tableString += "\n";
+            // tableString += "\n";
             continue;
         }
 

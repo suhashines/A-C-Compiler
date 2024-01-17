@@ -2,9 +2,11 @@
 #include<iostream>
 #include<cstdlib>
 #include<cstring>
+#include<list>
+#include<algorithm>
+#include<set>
 #include<fstream>
 #include<cmath>
-#include "2005037_SymbolTable.cpp"
 #include "2005037_ParseTreeNode.cpp"
 
 using namespace std;
@@ -15,6 +17,7 @@ int yylex(void);
 extern int line ;
 extern int error ;
 extern FILE *yyin;
+extern string toUpper(const string &str);
 
 SymbolTable symbolTable(11);
 
@@ -23,7 +26,12 @@ ofstream errorFile;
 ofstream parseFile ;
 
 //necessary global variables 
-string varType ;
+string varType ;  // stores recent variable type
+string funcName,funcReturnType ;
+list<pair<string,string>> parameters ;
+//Contains the parameter list <name, type> of the currently declared function
+bool definingFunction = false ;
+//to know the state of the function
 
 void yyerror(char *s)
 {
@@ -39,6 +47,11 @@ void printTable(){
 
 void logFileWriter(const string &left,const string &right){
 	logFile<<left<<" : "<<right<<endl;
+}
+
+void errorFileWriter(const string &errorMsg,int lineCount){
+  
+   errorFile<<"Line# "<<lineCount<<": "<<errorMsg<<endl;
 }
 
 void summaryWriter(){
@@ -62,13 +75,17 @@ void printParseTree(ParseTreeNode *root, int space)
         return ;
     }
 
-    parseFile<<root->name<<" :"<<root->nameList<< "\t<Line : " <<root->startLine <<"-"<<root->endLine<< ">\n";
+    parseFile<<root->name<<" :"<<root->nameList << " \t<Line : " <<root->startLine <<"-"<<root->endLine<< ">\n";
 
     for(ParseTreeNode* node:root->children){
         printParseTree(node,space+1);
     }
 
 
+}
+
+void printScopeTable(){
+	cout<<symbolTable.printAll()<<endl;
 }
 
 
@@ -87,11 +104,13 @@ void handleIdDeclaration(ParseTreeNode* node){
 
 	if(idType=="void"){
 		errorFile<<"Line# "<<lineCount<<": Variable or field '"<<lexeme<<"' declared as void\n";
+		error ++ ;
 		return ;
 	}
 
 	if(symbolTable.containsFunction(lexeme)){
 		errorFile<<"Line# "<<lineCount<<": '"<<lexeme<<"' redeclared as different kind of symbol\n";
+		error ++ ;
 		return ;
 	}
 
@@ -99,21 +118,101 @@ void handleIdDeclaration(ParseTreeNode* node){
 
 	if(idInfo!=nullptr){
 		if(idInfo->idType==idType){
-			errorFile<<"Line# "<<lineCount<<": '"<<"Multiple declaration of '"<<lexeme<<"'\n";
+			errorFile<<"Line# "<<lineCount<<": Multiple declaration of '"<<lexeme<<"'\n";
+			error ++ ;
 		}else{
-			errorFile<<"Line# "<<lineCount<<": '"<<"Conflicting types for '"<<lexeme<<"'\n";
+			errorFile<<"Line# "<<lineCount<<": Conflicting types for '"<<lexeme<<"'\n";
+			error ++ ;
 		}
 
 		return ;
 	}
-
+    // no error in declaration, insert in symbolTable
 	symbolTable.insert(lexeme,token,idType);
+	cout<<lexeme<<" inserted in table "<<endl;
+	cout<<symbolTable.printAll()<<endl;
 
 }
 
+void handleFunctionDeclaration(const string&name,const string&returnType,int lineCount){
+	funcName = name ;
+	funcReturnType = returnType ;
+	FunctionInfo *functionInfo ;
+    cout<<"function called\n";
+	if(symbolTable.insert(name,"ID",true)){
+	  //insertion successful
+	  //let's print the symbolTable 
+	  cout<<symbolTable.printAll();
+
+	  functionInfo = (FunctionInfo*)symbolTable.lookupCurrentScope(name);
+	  functionInfo->setReturnType(returnType);
+	  functionInfo->isDefined = definingFunction;
+	  //now we need to set its parameter list
+	  set<string> paramName ;
+
+      list <pair<string,string>>::iterator it = parameters.begin();
+
+	  while(it!=parameters.end()){
+
+		if(it->second!="" && !paramName.insert(it->second).second){
+            string error = "Redefinition of parameter '"+it->second+"'";
+			errorFileWriter(error,lineCount);
+		}
+		functionInfo->addParameter(it->first);
+		it++ ;
+	  }
 
 
+	}else{
+		SymbolInfo *symbol = symbolTable.lookup(name);
 
+		if(!symbol->isFunction){
+			string error = "'"+name+"' redeclared as different kind of symbol" ;
+			errorFileWriter(error,lineCount);
+		}else{
+			//this function was declared or defined previously
+			cout<<"this function was declared or defined previously\n";
+
+			functionInfo = (FunctionInfo*)symbol ;
+			cout<<"new funcs return type "<<returnType<<endl ;
+
+			if(functionInfo->getReturnType()!=returnType){
+				string error = "Conflicting types for '"+name+"'";
+			    errorFileWriter(error,lineCount);
+			}else if(!functionInfo->isDefined && definingFunction){
+				//previous one is function prototype and this one is the definiton
+                
+				if(parameters.size() != functionInfo->getNumberOfParameters()){
+					string error = "Conflicting types for '"+name+"'";
+					errorFileWriter(error,lineCount);
+				}else{
+					//let's check for type mismatch
+
+					int i=0 ;
+
+					for(auto it=parameters.begin();it!=parameters.end();it++){
+						
+						if(it->first!=functionInfo->findParamAtIndex(i)){
+							string error = "Type mismatch of argument "+to_string(i+1)+"of '"+name+"'";
+							errorFileWriter(error,lineCount);
+						}
+						i++ ;
+					}
+				}
+
+			}else{
+				string error = "Multiple definition of function '"+name+"'" ;
+				errorFileWriter(error,lineCount);
+			}
+			
+		}
+	}
+    
+	//resetting the variables 
+	parameters.clear();
+	definingFunction = false;
+
+}
 
 
 
@@ -156,11 +255,15 @@ start : program
 		$$ = new ParseTreeNode("start");
 		$$->addChild($1);
 		printParseTree($$,0);
+		printScopeTable();
 	}
 	;
 
 program : program unit {
 	logFileWriter("program","program unit");
+	$$ = new ParseTreeNode("program");
+	$$->addChild($1);
+	$$->addChild($2);
 }
 	| unit {logFileWriter("program","unit");
 	
@@ -177,38 +280,146 @@ unit : var_declaration {
 }
      | func_declaration {
 		logFileWriter("unit","func_declaration");
+		$$ = new ParseTreeNode("unit");
+	    $$->addChild($1);
+		definingFunction= false ;
 	 }
      | func_definition {
 		logFileWriter("unit","func_definition");
+		$$ = new ParseTreeNode("unit");
+	    $$->addChild($1);
+		definingFunction= true;
 	 }
      ;
      
 func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON {
 	logFileWriter("func_declaration","type_specifier ID LPAREN parameter_list RPAREN SEMICOLON");
+    $$ = new ParseTreeNode("func_declaration");
+	$$->addChild($1);
+	$$->addChild($2);
+	$$->addChild($3);
+	$$->addChild($4);
+	$$->addChild($5);
+	$$->addChild($6);
+    
+	funcName = $2->lexeme ;
+	int discoveryLine = $2->startLine;
+
+	funcReturnType = $1->lastSymbol->getType();
+	handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
+
 }
 		| type_specifier ID LPAREN RPAREN SEMICOLON {
 			logFileWriter("func_declaration","type_specifier ID LPAREN RPAREN SEMICOLON");
+		    $$ = new ParseTreeNode("func_declaration");
+			$$->addChild($1);
+	        $$->addChild($2);
+	        $$->addChild($3);
+	        $$->addChild($4);
+	        $$->addChild($5);
+
+			//at this point varType = returnType ;
+	         funcName = $2->lexeme ;
+	         int discoveryLine = $2->startLine;
+			 funcReturnType = $1->lastSymbol->getType();
+	        handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
 		}
 		;
 		 
 func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement {
 	logFileWriter("func_definition","type_specifier ID LPAREN parameter_list RPAREN compound_statement");
+
+    $$ = new ParseTreeNode("func_definition");
+	$$->addChild($1);
+	$$->addChild($2);
+	$$->addChild($3);
+	$$->addChild($4);
+	$$->addChild($5);
+	$$->addChild($6);
+
+	funcName = $2->lexeme ;
+	int discoveryLine = $2->startLine;
+	funcReturnType = $1->lastSymbol->getType();
+	handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
+
+	
 }
 		| type_specifier ID LPAREN RPAREN compound_statement {
 			logFileWriter("func_definition","type_specifier ID LPAREN RPAREN compound_statement");
+		    $$ = new ParseTreeNode("func_definition");
+			$$->addChild($1);
+	        $$->addChild($2);
+	        $$->addChild($3);
+	        $$->addChild($4);
+	        $$->addChild($5);
+		
+		    funcName = $2->lexeme ;
+	        int discoveryLine = $2->startLine;
+	        funcReturnType = $1->lastSymbol->getType();
+	        handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
+
 		}
  		;				
 
 
-parameter_list  : parameter_list COMMA type_specifier ID {logFileWriter("parameter_list","parameter_list COMMA type_specifier ID");}
-		| parameter_list COMMA type_specifier {logFileWriter("parameter_list","parameter_list COMMA type_specifier");}
- 		| type_specifier ID {logFileWriter("parameter_list","type_specifier ID");}
-		| type_specifier {logFileWriter("parameter_list","type_specifier");}
+parameter_list  : parameter_list COMMA type_specifier ID {
+	logFileWriter("parameter_list","parameter_list COMMA type_specifier ID");
+	$$ = new ParseTreeNode("parameter_list");
+	$$->addChild($1);
+	$$->addChild($2);
+	$$->addChild($3);
+	$$->addChild($4);
+
+    string paramName = $4->lexeme ;
+	//now we'll insert varType and lexeme in our paramList
+	parameters.push_back(make_pair(toUpper(varType),paramName));
+    
+
+	}
+		| parameter_list COMMA type_specifier {
+			logFileWriter("parameter_list","parameter_list COMMA type_specifier");
+			$$ = new ParseTreeNode("parameter_list");
+			$$->addChild($1);
+		    $$->addChild($2);
+		    $$->addChild($3);
+
+			parameters.push_back(make_pair(toUpper(varType),""));
+
+			}
+ 		| type_specifier ID {
+			logFileWriter("parameter_list","type_specifier ID");
+			$$ = new ParseTreeNode("parameter_list");
+			$$->addChild($1);
+		    $$->addChild($2);
+
+			string paramName = $2->lexeme;
+
+			parameters.push_back(make_pair(toUpper(varType),paramName));
+
+			}
+		| type_specifier {
+			logFileWriter("parameter_list","type_specifier");
+			$$ = new ParseTreeNode("parameter_list");
+			$$->addChild($1);
+			parameters.push_back(make_pair(toUpper(varType),""));
+			}
  		;
 
  		
-compound_statement : LCURL statements RCURL {logFileWriter("compound_statement","LCURL statements RCURL");}
- 		    | LCURL RCURL {logFileWriter("compound_statement","LCURL RCURL");}
+compound_statement : LCURL statements RCURL {
+	logFileWriter("compound_statement","LCURL statements RCURL");
+    $$ = new ParseTreeNode("compound_statement");
+	$$->addChild($1);
+	$$->addChild($2);
+	$$->addChild($3);
+}
+ 		    | LCURL RCURL {
+				logFileWriter("compound_statement","LCURL RCURL");
+			    $$ = new ParseTreeNode("compound_statement");
+				$$->addChild($1);
+				$$->addChild($2);
+		
+			}
  		    ;
  		    
 var_declaration : type_specifier declaration_list SEMICOLON {logFileWriter("var_declaration","type_specifier declaration_list SEMICOLON");
@@ -258,6 +469,14 @@ declaration_list : declaration_list COMMA ID {
 }
  		  | declaration_list COMMA ID LTHIRD CONST_INT RTHIRD {
 			logFileWriter("declaration_list","declaration_list COMMA ID LSQUARE CONST_INT RSQUARE");
+			$$ = new ParseTreeNode("declaration_list");
+			$$->addChild($1);
+		    $$->addChild($2);
+		    $$->addChild($3);
+		    $$->addChild($4);
+		    $$->addChild($5);
+		    $$->addChild($6);
+			
 		  }
  		  | ID {
 			logFileWriter("declaration_list","ID");
@@ -269,109 +488,296 @@ declaration_list : declaration_list COMMA ID {
 			}
  		  | ID LTHIRD CONST_INT RTHIRD  {
 			logFileWriter("declaration_list","ID LTHIRD CONST_INT RTHIRD");
+			$$ = new ParseTreeNode("declaration_list");
+			$$->addChild($1);
+			$$->addChild($2);
+			$$->addChild($3);
+			$$->addChild($4);
 		  }
  		  ;
  		  
-statements : statement {logFileWriter("statements","statement");}
+statements : statement {logFileWriter("statements","statement");
+    $$ = new ParseTreeNode("statements");
+	$$->addChild($1);
+}
 	   | statements statement {
 		logFileWriter("statements","statements statement");
+	
+	    $$ = new ParseTreeNode("statements");
+		$$->addChild($1);   
+		$$->addChild($2);   
 	   }
 	   ;
 	   
 statement : var_declaration {
 	logFileWriter("statement","var_declaration");
+    $$ = new ParseTreeNode("statement");
+    $$->addChild($1);
 }
 	  | expression_statement {
 		logFileWriter("statement","expression_statement");
+	    $$ = new ParseTreeNode("statement");
+		$$->addChild($1);
 	  }
 	  | compound_statement {
 		logFileWriter("statement","compound_statement");
+	    $$ = new ParseTreeNode("statement");
+		$$->addChild($1);
+		symbolTable.exitScope();
 	  }
 	  | FOR LPAREN expression_statement expression_statement expression RPAREN statement {
 		logFileWriter("statement","FOR LPAREN expression_statement expression_statement expression RPAREN statement");
+	    $$ = new ParseTreeNode("statement");
+		$$->addChild($1);
+		$$->addChild($2);
+		$$->addChild($3);
+		$$->addChild($4);
+		$$->addChild($5);
+		$$->addChild($6);
+		$$->addChild($7);
 	  }
 	  | IF LPAREN expression RPAREN statement {
 		logFileWriter("statement","IF LPAREN expression RPAREN statement");
+	    $$ = new ParseTreeNode("statement");
+		$$->addChild($1);
+		$$->addChild($2);
+		$$->addChild($3);
+		$$->addChild($4);
+		$$->addChild($5);
 	  }
 	  | IF LPAREN expression RPAREN statement ELSE statement {
 		logFileWriter("statement","IF LAPAREN expression RPAREN statement ELSE statement");
+	    $$ = new ParseTreeNode("statement");
+		$$->addChild($1);
+		$$->addChild($2);
+		$$->addChild($3);
+		$$->addChild($4);
+		$$->addChild($5);
+		$$->addChild($6);
+		$$->addChild($7);
 	  }
 	  | WHILE LPAREN expression RPAREN statement {
 		logFileWriter("statement","WHILE LPAREN expression RPAREN statement");
+	    $$ = new ParseTreeNode("statement");
+		$$->addChild($1);
+		$$->addChild($2);
+		$$->addChild($3);
+		$$->addChild($4);
+		$$->addChild($5);
 	  }
 	  | PRINTLN LPAREN ID RPAREN SEMICOLON  {
 		logFileWriter("statement","PRINTLN LPAREN ID RPAREN SEMICOLON");
+	    $$ = new ParseTreeNode("statement");
+		$$->addChild($1);
+		$$->addChild($2);
+		$$->addChild($3);
+		$$->addChild($4);
+		$$->addChild($5);
 	  }
 	  | RETURN expression SEMICOLON {
 		logFileWriter("statement","RETURN expression SEMICOLON");
+	    $$ = new ParseTreeNode("statement");
+		$$->addChild($1);
+		$$->addChild($2);
+		$$->addChild($3);
 	  }
 	  ;
 	  
-expression_statement 	: SEMICOLON	{logFileWriter("expression_statement","SEMICOLON");}		
-			| expression SEMICOLON {logFileWriter("expression_statement","expression SEMICOLON");}
+expression_statement 	: SEMICOLON	{
+	logFileWriter("expression_statement","SEMICOLON");
+    $$ = new ParseTreeNode("expression_statement");
+	$$->addChild($1);
+
+}		
+			| expression SEMICOLON {
+				logFileWriter("expression_statement","expression SEMICOLON");
+			    $$ = new ParseTreeNode("expression_statement");
+				$$->addChild($1);
+				$$->addChild($2);
+			
+			}
 			;
 	  
-variable : ID {logFileWriter("variable","ID");}
+variable : ID {logFileWriter("variable","ID");
+
+$$ = new ParseTreeNode("variable");
+$$->addChild($1);
+
+}
 	 | ID LTHIRD expression RTHIRD {
 		logFileWriter("variable","ID LTHIRD expression RTHIRD");
-	 }
+		
+		$$ = new ParseTreeNode("variable");
+		$$->addChild($1);
+		$$->addChild($2);
+		$$->addChild($3);
+		$$->addChild($4);
+		
+		}
 	 ;
 	 
- expression : logic_expression	{logFileWriter("expression","logic_expression");}
+ expression : logic_expression	{logFileWriter("expression","logic_expression");
+ $$ = new ParseTreeNode("expression");
+ $$->addChild($1);
+ 
+ }
 	   | variable ASSIGNOP logic_expression {
 		logFileWriter("expression","variable ASSIGNOP logic_expression");
-	   }	
+		$$ = new ParseTreeNode("expression");
+		$$->addChild($1);
+		$$->addChild($2);
+		$$->addChild($3);
+		
+		}	
 	   ;
 			
 logic_expression : rel_expression 	{
 	logFileWriter("logic_expression","rel_expression");
+    $$ = new ParseTreeNode("logic_expression");
+	$$->addChild($1);
+
 }
 		 | rel_expression LOGICOP rel_expression {
 			logFileWriter("logic_expression","rel_expression LOGICOP rel_expression");
+		     $$ = new ParseTreeNode("logic_expression");
+			 $$->addChild($1);
+			 $$->addChild($2);
+			 $$->addChild($3);
+		 
 		 }	
 		 ;
 			
 rel_expression	: simple_expression {
 	logFileWriter("rel_expression","simple_expression");
+    $$=new ParseTreeNode("rel_expression");
+	$$->addChild($1);
 }
 		| simple_expression RELOP simple_expression	{
 			logFileWriter("rel_expression","simple_expression RELOP simple_expression");
+		    $$=new ParseTreeNode("rel_expression");
+			$$->addChild($1);
+			$$->addChild($2);
+			$$->addChild($3);
 		}
 		;
 				
-simple_expression : term {logFileWriter("simple_expression","term");}
+simple_expression : term {logFileWriter("simple_expression","term");
+$$ = new ParseTreeNode("simple_expression");
+$$->addChild($1);
+
+}
 		  | simple_expression ADDOP term {
 			logFileWriter("simple_expression","simple_expression ADDOP term");
-		  }
+			$$ = new ParseTreeNode("simple_expression");
+			$$->addChild($1);
+			$$->addChild($2);
+			$$->addChild($3);
+
+			}
 		  ;
 					
-term :	unary_expression {logFileWriter("term","unary_expression");}
-     |  term MULOP unary_expression {logFileWriter("term","term MULOP unary_expression");}
+term :	unary_expression {
+	logFileWriter("term","unary_expression");
+	$$ = new ParseTreeNode("term");
+	$$->addChild($1);
+	
+	}
+     |  term MULOP unary_expression {
+		logFileWriter("term","term MULOP unary_expression");
+		$$ = new ParseTreeNode("term");
+		$$->addChild($1);
+		$$->addChild($2);
+		$$->addChild($3);
+		
+		}
      ;
 
-unary_expression : ADDOP unary_expression {logFileWriter("unary_expression","ADDOP unary_expression");} 
-		 | NOT unary_expression {logFileWriter("unary_expression","NOT unary_expression");}
-		 | factor {logFileWriter("unary_expression","factor");}
+unary_expression : ADDOP unary_expression {
+	logFileWriter("unary_expression","ADDOP unary_expression");
+	$$ = new ParseTreeNode("unary_expression");
+	$$->addChild($1);
+	$$->addChild($2);
+	} 
+		 | NOT unary_expression {
+			logFileWriter("unary_expression","NOT unary_expression");
+			$$ = new ParseTreeNode("unary_expression");
+			$$->addChild($1);
+			$$->addChild($2);
+			}
+		 | factor {
+			logFileWriter("unary_expression","factor");
+			$$ = new ParseTreeNode("unary_expression");
+			$$->addChild($1);
+			}
 		 ;
 	
-factor	: variable {logFileWriter("factor","variable");}
-	| ID LPAREN argument_list RPAREN {logFileWriter("factor","ID LPAREN argument_list RPAREN");}
-	| LPAREN expression RPAREN {logFileWriter("factor","LPAREN expression RPAREN");}
-	| CONST_INT  {logFileWriter("factor","CONST_INT");} 
-	| CONST_FLOAT {logFileWriter("factor","CONST_FLOAT");}
-	| variable INCOP {logFileWriter("factor","variable INCOP");} 
-	| variable DECOP {logFileWriter("factor","variable DECOP");}
+factor	: variable {
+	logFileWriter("factor","variable");
+	$$ = new ParseTreeNode("factor");
+	$$->addChild($1);
+	
+	}
+	| ID LPAREN argument_list RPAREN {
+		logFileWriter("factor","ID LPAREN argument_list RPAREN");
+		$$ = new ParseTreeNode("factor");
+		$$->addChild($1);
+		$$->addChild($2);
+		$$->addChild($3);
+		$$->addChild($4);
+		
+		}
+	| LPAREN expression RPAREN {
+		logFileWriter("factor","LPAREN expression RPAREN");
+		$$ = new ParseTreeNode("factor");
+		$$->addChild($1);
+		$$->addChild($2);
+		$$->addChild($3);
+		}
+	| CONST_INT  {
+		logFileWriter("factor","CONST_INT");
+		$$ = new ParseTreeNode("factor");
+		$$->addChild($1);
+		
+		} 
+	| CONST_FLOAT {
+		logFileWriter("factor","CONST_FLOAT");
+		$$ = new ParseTreeNode("factor");
+		$$->addChild($1);
+		}
+	| variable INCOP {
+		logFileWriter("factor","variable INCOP");
+		$$ = new ParseTreeNode("factor");
+		$$->addChild($1);
+		$$->addChild($2);
+		} 
+	| variable DECOP {
+		logFileWriter("factor","variable DECOP");
+		$$ = new ParseTreeNode("factor");
+		$$->addChild($1);
+		$$->addChild($2);
+		}
 	;
 	
-argument_list : arguments {logFileWriter("argument_list","arguments");}
+argument_list : arguments {
+	logFileWriter("argument_list","arguments");
+	$$ = new ParseTreeNode("argument_list");
+	$$->addChild($1);
+
+	}
 			  |
 			  ;
 	
 arguments : arguments COMMA logic_expression {
 	logFileWriter("arguments","arguments COMMA logic_expression");
+	$$ = new ParseTreeNode("arguments");
+	$$->addChild($1);
+	$$->addChild($2);
+	$$->addChild($3);
 }
 	      | logic_expression {
 			logFileWriter("arguments","logic_expression");
+			$$ = new ParseTreeNode("arguments");
+			$$->addChild($1);
 		  }
 	      ;
  
