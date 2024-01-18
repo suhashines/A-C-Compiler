@@ -105,7 +105,7 @@ void handleIdDeclaration(ParseTreeNode* node,int size){
 	//looking for error 
 
 	if(idType=="VOID"){
-		errorFile<<"Line# "<<lineCount<<": Variable or field '"<<lexeme<<"' declared as void\n";
+		errorFile<<"Line# "<<lineCount<<": Variable or field '"<<lexeme<<"' declared void\n";
 		error ++ ;
 		return ;
 	}
@@ -702,7 +702,13 @@ if(symbol->isFunction){
 		$$->addChild($3);
 
 		//hear we come to handle all the errors 
-
+         if($3->dataType == "VOID"){
+			string error = "Void cannot be used in expression";
+			errorFileWriter(error,$3->startLine);
+		 }else if($1->dataType == "INT" && $3->dataType=="FLOAT"){
+			string error = "Warning: possible loss of data in assignment of FLOAT to INT";
+			errorFileWriter(error,$1->startLine);
+		 }
 		
 
 		
@@ -794,7 +800,7 @@ term :	unary_expression {
 		cout<<"yoo what is my lexeme "<<$3->lastFoundLexeme<<endl;
 		string mulop = $2->lexeme ;
 
-		if($1->dataType == "VOID" || $2->dataType == "VOID"){
+		if($1->dataType == "VOID" || $3->dataType == "VOID"){
 			// cannot use arithmatic operator on void
 			$$->dataType = "VOID";
 		}else if($3->lastFoundLexeme=="0" && (mulop == "%" || mulop == "/") ){
@@ -857,10 +863,15 @@ factor	: variable {
 	| ID LPAREN argument_list RPAREN {
 		logFileWriter("factor","ID LPAREN argument_list RPAREN");
 		$$ = new ParseTreeNode("factor");
+		cout<<"matching the rule"<<endl;
 		$$->addChild($1);
+		cout<<"child 1 added"<<endl;
 		$$->addChild($2);
+		cout<<"child 2 added"<<endl;
 		$$->addChild($3);
+		cout<<"child 3 added"<<endl;
 		$$->addChild($4);
+		cout<<"child 4 added"<<endl;
 
 		SymbolInfo* symbol = symbolTable.lookup($1->lexeme);
 
@@ -952,7 +963,10 @@ argument_list : arguments {
 	$$->addChild($1);
 
 	}
-			  |
+			  |    {
+				//argument list can be empty but argument list is a valid node
+				$$ = new ParseTreeNode("argument_list");
+			  }
 			  ;
 	
 arguments : arguments COMMA logic_expression {
