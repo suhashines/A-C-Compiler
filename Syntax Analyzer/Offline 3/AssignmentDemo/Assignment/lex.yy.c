@@ -1073,7 +1073,7 @@ YY_RULE_SETUP
 
             if(tab!=indent){
                 warning ++ ;
-                warningWriter(tab,indent);
+                //warningWriter(tab,indent);
             }
 
             unput(yytext[yyleng-1]);
@@ -1086,7 +1086,7 @@ YY_RULE_SETUP
 {
          //cout<<"rule 1 at line "<<line<<" global: "<<globalIndent<<" read: "<<yytext[yyleng-1]<<endl;
          warning ++ ;
-         logFile<<"Line# "<<line<<": Warning, tab required but got space."<<endl;
+         //logFile<<"Line# "<<line<<": Warning, tab required but got space."<<endl;
          unput(yytext[yyleng-1]);
          BEGIN INITIAL;
 }  

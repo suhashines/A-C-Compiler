@@ -175,7 +175,7 @@ INVALID_ID_SUFFIX_NUM_PREFIX  {FLOAT}{ID}+
 
             if(tab!=indent){
                 warning ++ ;
-                warningWriter(tab,indent);
+                //warningWriter(tab,indent);
             }
 
             unput(yytext[yyleng-1]);
@@ -185,7 +185,7 @@ INVALID_ID_SUFFIX_NUM_PREFIX  {FLOAT}{ID}+
 <NEWLINE_STATE>((\t)*" "(\t)*)+. {
          //cout<<"rule 1 at line "<<line<<" global: "<<globalIndent<<" read: "<<yytext[yyleng-1]<<endl;
          warning ++ ;
-         logFile<<"Line# "<<line<<": Warning, tab required but got space."<<endl;
+         //logFile<<"Line# "<<line<<": Warning, tab required but got space."<<endl;
          unput(yytext[yyleng-1]);
          BEGIN INITIAL;
 }  

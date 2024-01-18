@@ -104,7 +104,7 @@ void handleIdDeclaration(ParseTreeNode* node,int size){
 
 	//looking for error 
 
-	if(idType=="void"){
+	if(idType=="VOID"){
 		errorFile<<"Line# "<<lineCount<<": Variable or field '"<<lexeme<<"' declared as void\n";
 		error ++ ;
 		return ;
@@ -449,7 +449,7 @@ $$->addChild($3);
  		 
 type_specifier	: INT  {
 							logFileWriter("type_specifier","INT");
-							varType = "int" ;
+							varType = "INT" ;
 							$$ = new ParseTreeNode("type_specifier");
 							$$->addChild($1);
 
@@ -457,13 +457,13 @@ type_specifier	: INT  {
 					   }
  		| FLOAT        {
 							logFileWriter("type_specifier", "FLOAT");
-							varType = "float" ;
+							varType = "FLOAT" ;
 							$$ = new ParseTreeNode("type_specifier");
 							$$->addChild($1);
 					   }
  		| VOID		  {
 							logFileWriter("type_specifier", "VOID");
-							varType = "void" ;
+							varType = "VOID" ;
 							$$ = new ParseTreeNode("type_specifier");
 							$$->addChild($1);
 		}
@@ -673,7 +673,7 @@ if(symbol->isFunction){
 	if(idInfo->size==-1){
 		errorFileWriter(error,$1->startLine);
 		//cout<<"symbol is not an array"<<endl;
-	}else if($3->lastFoundToken=="CONST_FLOAT"){
+	}else if($3->lastFoundToken=="FLOAT"){
 		//cout<<"symbol is an array with invalid subscript"<<endl;
 		errorFileWriter("Array subscript is not an integer",$1->startLine);
      }else{
@@ -692,7 +692,7 @@ if(symbol->isFunction){
  expression : logic_expression	{logFileWriter("expression","logic_expression");
  $$ = new ParseTreeNode("expression");
  $$->addChild($1);
- 
+ $$->dataType = $1->dataType ;
  }
 	   | variable ASSIGNOP logic_expression {
 		logFileWriter("expression","variable ASSIGNOP logic_expression");
@@ -701,6 +701,9 @@ if(symbol->isFunction){
 		$$->addChild($2);
 		$$->addChild($3);
 
+		//hear we come to handle all the errors 
+
+		
 
 		
 		}	
@@ -719,6 +722,12 @@ logic_expression : rel_expression 	{
 			 $$->addChild($1);
 			 $$->addChild($2);
 			 $$->addChild($3);
+
+			 if($1->dataType == "VOID" || $2->dataType == "VOID"){
+				$$->dataType = "VOID";
+			 }else{
+				$$->dataType = "INT";
+			 }
 		 
 		 }	
 		 ;
@@ -735,6 +744,12 @@ rel_expression	: simple_expression {
 			$$->addChild($1);
 			$$->addChild($2);
 			$$->addChild($3);
+
+			if($1->dataType == "VOID" || $3->dataType == "VOID"){
+				$$->dataType = "VOID";
+			}else{
+				$$->dataType = "INT";
+			}
 		}
 		;
 				
@@ -751,6 +766,14 @@ $$->dataType = $1->dataType ;
 			$$->addChild($2);
 			$$->addChild($3);
 
+			if($1->dataType == "VOID" || $3->dataType == "VOID"){
+				$$->dataType = "VOID";
+			}else if($1->dataType == "FLOAT" || $3->dataType == "FLOAT"){
+				$$->dataType = "FLOAT";
+			}else{
+				$$->dataType = "INT";
+			}
+            
 			}
 		  ;
 					
@@ -767,6 +790,31 @@ term :	unary_expression {
 		$$->addChild($1);
 		$$->addChild($2);
 		$$->addChild($3);
+        
+		cout<<"yoo what is my lexeme "<<$3->lastFoundLexeme<<endl;
+		string mulop = $2->lexeme ;
+
+		if($1->dataType == "VOID" || $2->dataType == "VOID"){
+			// cannot use arithmatic operator on void
+			$$->dataType = "VOID";
+		}else if($3->lastFoundLexeme=="0" && (mulop == "%" || mulop == "/") ){
+			string error = "Warning: division by zero" ;
+			errorFileWriter(error,$3->startLine);
+			if(mulop=="%"){
+				$$->dataType = "INT";
+			}else{
+				$$->dataType = $1->dataType ;
+			}
+		}else if(mulop=="%" && ($1->dataType == "FLOAT" || $3->dataType == "FLOAT")){
+			string error = "Operands of modulus must be integers";
+			errorFileWriter(error,$1->startLine);
+			$$->dataType = "INT";
+		}else if($1->dataType == "FLOAT" || $3->dataType == "FLOAT"){
+			$$->dataType = "FLOAT";
+		}else{
+			$$->dataType = $1->dataType ;
+		}
+
 		
 		}
      ;
@@ -776,12 +824,20 @@ unary_expression : ADDOP unary_expression {
 	$$ = new ParseTreeNode("unary_expression");
 	$$->addChild($1);
 	$$->addChild($2);
+	$$->dataType = $2->dataType ;
+
 	} 
 		 | NOT unary_expression {
 			logFileWriter("unary_expression","NOT unary_expression");
 			$$ = new ParseTreeNode("unary_expression");
 			$$->addChild($1);
 			$$->addChild($2);
+            $$->dataType = $2->dataType ;
+
+			// if($2->dataType == "VOID"){
+			// 	string error = "Cannot use unary operator on void type";
+			// 	errorFileWriter(error,$2->startLine);
+			// }
 			}
 		 | factor {
 			logFileWriter("unary_expression","factor");
@@ -816,9 +872,41 @@ factor	: variable {
 			FunctionInfo * func = (FunctionInfo*)symbol ;
 			//but what are its arguments!!! already stored in argList ^_^
 
-			cout<<"my size"<<argList.size()<<endl;
+			//cout<<"my size"<<argList.size()<<endl;
 
+			//let's check for wrong number of arguments
+			int paramCount = func->getNumberOfParameters();
+			int argCount = argList.size();
+			bool mismatch = false;
+            string error ;
+			if(argCount<paramCount){
+				mismatch = true;
+                error = "Too few arguments to function '"+$1->lexeme+"'";
+				errorFileWriter(error,$1->startLine);
+			}else if(argCount>paramCount){
+                mismatch = true;
+                error = "Too many arguments to function '"+$1->lexeme+"'";
+				errorFileWriter(error,$1->startLine);
+			}else{
+				//let's see the paramList now ;
+                int i=0 ;
+
+				for(const auto &args : argList){
+
+					if(args != func->findParamAtIndex(i)){
+						bool mismatch = true ;
+						error = "Type mismatch for argument "+to_string(i+1)+ " of '"+$1->lexeme+"'";
+						errorFileWriter(error,$1->startLine);
+					}
+					i++ ;
+				}
+			}
+			if(!mismatch){
+				$$->dataType = func->getReturnType() ;
+			}
 		}
+
+		argList.clear();
 		
 		}
 	| LPAREN expression RPAREN {
@@ -827,7 +915,7 @@ factor	: variable {
 		$$->addChild($1);
 		$$->addChild($2);
 		$$->addChild($3);
-
+		$$->dataType = $2->dataType;
 		}
 	| CONST_INT  {
 		logFileWriter("factor","CONST_INT");

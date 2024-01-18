@@ -1,2 +1,1 @@
-Line# 7: Undeclared variable 'd'
-Line# 7: Undeclared function 'x'
+Line# 3: Warning: division by zero
