@@ -109,7 +109,7 @@ public:
 
     
 
-    bool insert(const string &name, const string &type,const string &idType)
+    bool insert(const string &name, const string &type,const string &idType,int size)
     {   //cout<<"\t" ;
 
         SymbolInfo *symbol = insertUtil(name);
@@ -119,7 +119,7 @@ public:
              return false;
              }
 
-        symbol = new IdInfo(name, idType);
+        symbol = new IdInfo(name, idType,size);
 
         int index = hashFunction(name);
         int chain = 1 ;

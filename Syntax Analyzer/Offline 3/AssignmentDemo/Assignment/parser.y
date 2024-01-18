@@ -129,7 +129,7 @@ void handleIdDeclaration(ParseTreeNode* node,int size){
 		return ;
 	}
     // no error in declaration, insert in symbolTable
-	symbolTable.insert(lexeme,token,idType);
+	symbolTable.insert(lexeme,token,idType,size);
 	cout<<lexeme<<" inserted in table "<<endl;
 	cout<<symbolTable.printAll()<<endl;
 
@@ -333,23 +333,23 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statem
     $$ = new ParseTreeNode("func_definition");
 	 
 	$$->addChild($1);
-	cout<<"child 1 inserted"<<endl;
+	//cout<<"child 1 inserted"<<endl;
 	$$->addChild($2);
 	//cout<<"Let's see child 2 "<<$2->lexeme<<endl;
-	cout<<"child 2 inserted"<<endl;
+	//cout<<"child 2 inserted"<<endl;
 	$$->addChild($3);
-	cout<<"child 3 inserted"<<endl;
+	//cout<<"child 3 inserted"<<endl;
 	$$->addChild($4);
-	cout<<"child 4 inserted"<<endl;
+	//cout<<"child 4 inserted"<<endl;
     $$->addChild($5);
-	cout<<"child 5 inserted"<<endl;
+	//cout<<"child 5 inserted"<<endl;
 	$$->addChild($6);
-	cout<<"child 6 inserted"<<endl;
+	//cout<<"child 6 inserted"<<endl;
     
 	funcName = $2->lexeme ;
 	int discoveryLine = $2->startLine;
 	funcReturnType = $1->lastFoundLexeme ;
-	cout<<"My return type is "<<funcReturnType<<endl;
+	//cout<<"My return type is "<<funcReturnType<<endl;
 	handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
 
 	
@@ -366,7 +366,7 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statem
 		    funcName = $2->lexeme ;
 	        int discoveryLine = $2->startLine;
 	        funcReturnType = $1->lastFoundLexeme ;
-			cout<<"My return type is "<<funcReturnType<<endl;
+			//cout<<"My return type is "<<funcReturnType<<endl;
 	        handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
 
 		}
@@ -492,6 +492,7 @@ declaration_list : declaration_list COMMA ID {
 		    $$->addChild($6);
 
 			int size = stoi($5->lexeme) ;
+			cout<<"found array size "<<size<<endl;
             handleIdDeclaration($3,size);
 			
 		  }
@@ -512,6 +513,7 @@ declaration_list : declaration_list COMMA ID {
 			$$->addChild($4);
 
 			int size = stoi($3->lexeme) ;
+			cout<<"found array size "<<size<<endl;
             handleIdDeclaration($1,size);
 		  }
  		  ;
@@ -623,6 +625,16 @@ variable : ID {logFileWriter("variable","ID");
 $$ = new ParseTreeNode("variable");
 $$->addChild($1);
 
+//let's look for semantic errors
+
+SymbolInfo *symbolCurr = symbolTable.lookupCurrentScope($1->lexeme);
+SymbolInfo * symbolGlobal = symbolTable.lookupGlobalScope($1->lexeme);
+
+if(symbolCurr ==nullptr && symbolGlobal ==nullptr){
+    string error = "Undeclared variable '"+$1->lexeme+"'" ;
+	errorFileWriter(error,$1->startLine);
+}
+
 }
 	 | ID LTHIRD expression RTHIRD {
 		logFileWriter("variable","ID LTHIRD expression RTHIRD");
@@ -633,6 +645,37 @@ $$->addChild($1);
 		$$->addChild($3);
 		$$->addChild($4);
 		
+		
+SymbolInfo *symbolCurr = symbolTable.lookupCurrentScope($1->lexeme);
+SymbolInfo * symbolGlobal = symbolTable.lookupGlobalScope($1->lexeme);
+
+if(symbolCurr ==nullptr && symbolGlobal ==nullptr){
+    string error = "Undeclared variable '"+$1->lexeme+"'" ;
+	errorFileWriter(error,$1->startLine);
+	
+}else{
+
+SymbolInfo *symbol = symbolCurr == nullptr?symbolGlobal : symbolCurr ;
+string error = "'"+$1->lexeme+"' is not an array" ;
+
+if(symbol->isFunction){
+	
+    errorFileWriter(error,$1->startLine);
+}else{
+	IdInfo* idInfo = (IdInfo*)symbol ;
+	cout<<"symbol is an id"<<endl;
+	if(idInfo->size==-1){
+		errorFileWriter(error,$1->startLine);
+		cout<<"symbol is not an array"<<endl;
+	}else if($3->lastFoundToken=="CONST_FLOAT"){
+		cout<<"symbol is an array with invalid subscript"<<endl;
+		errorFileWriter("Array subscript is not an integer",$1->startLine);
+     }
+}
+
+
+}
+
 		}
 	 ;
 	 

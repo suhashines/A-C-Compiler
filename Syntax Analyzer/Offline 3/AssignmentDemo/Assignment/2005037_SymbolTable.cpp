@@ -49,9 +49,9 @@ public:
         delete temp;
     }
 
-    bool insert(const string &name,const string &type,const string &idType)
+    bool insert(const string &name,const string &type,const string &idType,int size)
     {
-        return tail->insert(name, type,idType);
+        return tail->insert(name, type,idType,size);
     }
 
     bool insert(const string &name,const string &type,bool isFunction=false){
@@ -102,6 +102,10 @@ public:
     SymbolInfo * lookupCurrentScope(const string &name){
 
         return tail->lookup(name);
+    }
+
+    SymbolInfo* lookupGlobalScope(const string &name){
+        return head->lookup(name);
     }
 
     void printCurrent(){

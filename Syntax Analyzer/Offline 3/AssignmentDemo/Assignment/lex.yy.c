@@ -1418,7 +1418,7 @@ YY_RULE_SETUP
                 globalIndent++ ;
                 symbolTable.enterScope();
                 for(auto it=parameters.begin(); it!=parameters.end();it++){
-                    symbolTable.insert(it->second,"ID",it->first);
+                    symbolTable.insert(it->second,"ID",it->first,-1);
                 }
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"LCURL",line);
                 

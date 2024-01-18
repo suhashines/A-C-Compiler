@@ -1,9 +1,7 @@
-int x,y,z; float a;
+int x;
 
-int var(int a,int b);
+int main(){
+	int a[10];
 
-int foo3(int a, int b);
-
-int func(int c, int d){
-	return 7;
+	a[2.5] = x ;
 }
