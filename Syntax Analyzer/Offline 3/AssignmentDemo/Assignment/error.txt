@@ -1,1 +1,2 @@
-Line# 6: Array subscript is not an integer
+Line# 7: Undeclared variable 'd'
+Line# 7: Undeclared function 'x'

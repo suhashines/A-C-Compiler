@@ -279,7 +279,7 @@ println {
 {INT}      {
                 lexLogWriter("CONST_INT",yytext);
                 tokenFileWriter("CONST_INT",yytext);
-                yylval.parseTreeNode = new ParseTreeNode(yytext,"CONST_INT",line); 
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"INT",line); 
                 return CONST_INT ;
 
             }
@@ -288,7 +288,7 @@ println {
 {FLOAT}    {
                 lexLogWriter("CONST_FLOAT",yytext); 
                 tokenFileWriter("CONST_FLOAT",yytext);
-                yylval.parseTreeNode = new ParseTreeNode(yytext,"CONST_FLOAT",line); 
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"FLOAT",line); 
                 return CONST_FLOAT ;
                 
                 }

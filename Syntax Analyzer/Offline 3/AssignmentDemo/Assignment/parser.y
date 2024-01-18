@@ -28,8 +28,9 @@ ofstream parseFile ;
 //necessary global variables 
 string varType ;  // stores recent variable type
 string funcName,funcReturnType ;
-list<pair<string,string>> parameters ;
-//Contains the parameter list <name, type> of the currently declared function
+list<pair<string,string>> parameters ; //Contains the parameter list <name, type> of the currently declared function
+list<string> argList ;  //contains the argument list while invoking a function
+
 bool definingFunction = false ;
 //to know the state of the function
 
@@ -633,6 +634,11 @@ SymbolInfo * symbolGlobal = symbolTable.lookupGlobalScope($1->lexeme);
 if(symbolCurr ==nullptr && symbolGlobal ==nullptr){
     string error = "Undeclared variable '"+$1->lexeme+"'" ;
 	errorFileWriter(error,$1->startLine);
+}else{
+	SymbolInfo *symbol = symbolCurr==nullptr ? symbolGlobal : symbolCurr ;
+	// cout<<"let's see if I have this data type";
+	// cout<<symbol->dataType<<endl ;
+	$$ -> dataType = symbol->dataType ;
 }
 
 }
@@ -663,14 +669,18 @@ if(symbol->isFunction){
     errorFileWriter(error,$1->startLine);
 }else{
 	IdInfo* idInfo = (IdInfo*)symbol ;
-	cout<<"symbol is an id"<<endl;
+	//cout<<"symbol is an id"<<endl;
 	if(idInfo->size==-1){
 		errorFileWriter(error,$1->startLine);
-		cout<<"symbol is not an array"<<endl;
+		//cout<<"symbol is not an array"<<endl;
 	}else if($3->lastFoundToken=="CONST_FLOAT"){
-		cout<<"symbol is an array with invalid subscript"<<endl;
+		//cout<<"symbol is an array with invalid subscript"<<endl;
 		errorFileWriter("Array subscript is not an integer",$1->startLine);
-     }
+     }else{
+		// I have found no error in array declaration 
+		$$ -> dataType = idInfo->dataType ;
+		//cout<<"yoo found correct array data type "<<$$->dataType<<endl;
+	 }
 }
 
 
@@ -690,6 +700,8 @@ if(symbol->isFunction){
 		$$->addChild($1);
 		$$->addChild($2);
 		$$->addChild($3);
+
+
 		
 		}	
 	   ;
@@ -698,6 +710,7 @@ logic_expression : rel_expression 	{
 	logFileWriter("logic_expression","rel_expression");
     $$ = new ParseTreeNode("logic_expression");
 	$$->addChild($1);
+	$$->dataType = $1->dataType ;
 
 }
 		 | rel_expression LOGICOP rel_expression {
@@ -714,6 +727,7 @@ rel_expression	: simple_expression {
 	logFileWriter("rel_expression","simple_expression");
     $$=new ParseTreeNode("rel_expression");
 	$$->addChild($1);
+	$$->dataType = $1->dataType ;
 }
 		| simple_expression RELOP simple_expression	{
 			logFileWriter("rel_expression","simple_expression RELOP simple_expression");
@@ -727,6 +741,7 @@ rel_expression	: simple_expression {
 simple_expression : term {logFileWriter("simple_expression","term");
 $$ = new ParseTreeNode("simple_expression");
 $$->addChild($1);
+$$->dataType = $1->dataType ;
 
 }
 		  | simple_expression ADDOP term {
@@ -743,6 +758,7 @@ term :	unary_expression {
 	logFileWriter("term","unary_expression");
 	$$ = new ParseTreeNode("term");
 	$$->addChild($1);
+	$$->dataType = $1->dataType ;
 	
 	}
      |  term MULOP unary_expression {
@@ -771,6 +787,7 @@ unary_expression : ADDOP unary_expression {
 			logFileWriter("unary_expression","factor");
 			$$ = new ParseTreeNode("unary_expression");
 			$$->addChild($1);
+            $$->dataType = $1->dataType ;
 			}
 		 ;
 	
@@ -778,6 +795,7 @@ factor	: variable {
 	logFileWriter("factor","variable");
 	$$ = new ParseTreeNode("factor");
 	$$->addChild($1);
+	$$->dataType = $1->dataType ;
 	
 	}
 	| ID LPAREN argument_list RPAREN {
@@ -787,6 +805,20 @@ factor	: variable {
 		$$->addChild($2);
 		$$->addChild($3);
 		$$->addChild($4);
+
+		SymbolInfo* symbol = symbolTable.lookup($1->lexeme);
+
+		if(symbol == nullptr || (!symbol->isFunction) ){
+			string error = "Undeclared function '"+$1->lexeme+"'";
+			errorFileWriter(error,$1->startLine);
+		}else{
+			//our symbol is a function 
+			FunctionInfo * func = (FunctionInfo*)symbol ;
+			//but what are its arguments!!! already stored in argList ^_^
+
+			cout<<"my size"<<argList.size()<<endl;
+
+		}
 		
 		}
 	| LPAREN expression RPAREN {
@@ -795,29 +827,34 @@ factor	: variable {
 		$$->addChild($1);
 		$$->addChild($2);
 		$$->addChild($3);
+
 		}
 	| CONST_INT  {
 		logFileWriter("factor","CONST_INT");
 		$$ = new ParseTreeNode("factor");
 		$$->addChild($1);
+		$$->dataType = "INT";
 		
 		} 
 	| CONST_FLOAT {
 		logFileWriter("factor","CONST_FLOAT");
 		$$ = new ParseTreeNode("factor");
 		$$->addChild($1);
+		$$->dataType = "FLOAT";
 		}
 	| variable INCOP {
 		logFileWriter("factor","variable INCOP");
 		$$ = new ParseTreeNode("factor");
 		$$->addChild($1);
 		$$->addChild($2);
+		$$->dataType = $1->dataType ;
 		} 
 	| variable DECOP {
 		logFileWriter("factor","variable DECOP");
 		$$ = new ParseTreeNode("factor");
 		$$->addChild($1);
 		$$->addChild($2);
+		$$->dataType = $1->dataType ;
 		}
 	;
 	
@@ -836,11 +873,14 @@ arguments : arguments COMMA logic_expression {
 	$$->addChild($1);
 	$$->addChild($2);
 	$$->addChild($3);
+	argList.push_back($3->dataType);
 }
 	      | logic_expression {
 			logFileWriter("arguments","logic_expression");
 			$$ = new ParseTreeNode("arguments");
 			$$->addChild($1);
+			//declare an argument list and push the arguments here
+			argList.push_back($1->dataType);
 		  }
 	      ;
  

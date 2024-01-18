@@ -14,6 +14,7 @@ class ParseTreeNode{
     int startLine,endLine ;
     string token ;  //token,lexeme for terminals 
     string lexeme ;
+    string dataType ; // INT, FLOAT OR VOID 
 
     vector<ParseTreeNode*> children ;
     string nameList ;
@@ -26,6 +27,7 @@ class ParseTreeNode{
         startLine = INT_MAX ;
         endLine = INT_MIN ;
         nameList= "" ;
+        dataType = "" ;
         //initially nameList is empty
     }
 

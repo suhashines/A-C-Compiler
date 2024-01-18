@@ -11,6 +11,7 @@ class SymbolInfo{
 
     SymbolInfo* next ;
     bool isFunction ;
+    string dataType ;
 
     SymbolInfo(const string &n,const string &t,SymbolInfo* next=nullptr){
         name = n ;
@@ -46,6 +47,7 @@ class FunctionInfo : public SymbolInfo {
 
         void setReturnType(string returnType){
             this->returnType = returnType;
+            dataType = returnType ;
         }
 
         string getReturnType(){
@@ -77,12 +79,14 @@ public:
  int size ;
  IdInfo(const string&name, const string &type):SymbolInfo(name,"ID"){
     idType = type ;
+    dataType = type ;
     size = -1 ;
  }
 
  IdInfo(const string&name,const string&type,int sz):SymbolInfo(name,"ID"){
     idType = type;
     size = sz;
+    dataType = type ;
  }
 
 
