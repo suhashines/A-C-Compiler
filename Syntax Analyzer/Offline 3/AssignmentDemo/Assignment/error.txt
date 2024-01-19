@@ -1,0 +1,1 @@
+Line# 4: Undeclared variable 'a'

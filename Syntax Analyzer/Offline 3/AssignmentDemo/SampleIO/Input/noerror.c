@@ -1,5 +1,4 @@
-int 
-x,y,z; float a;
+int x,y,z; float a;
 
 void foo();
 
