@@ -33,6 +33,8 @@ list<string> argList ;  //contains the argument list while invoking a function
 
 bool definingFunction = false ;
 //to know the state of the function
+bool isError = false ; //to know if there has been syntax error in function call
+bool hasDeclListError = false ;
 
 void yyerror(char *s)
 {
@@ -95,6 +97,12 @@ void printScopeTable(){
 
 
 void handleIdDeclaration(ParseTreeNode* node,int size){
+
+	if(hasDeclListError){
+		hasDeclListError = false;
+		return ;
+	}
+
 	//extracting information 
 
 	string lexeme = node->lexeme ;
@@ -351,8 +359,12 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statem
 	int discoveryLine = $2->startLine;
 	funcReturnType = $1->lastFoundLexeme ;
 	//cout<<"My return type is "<<funcReturnType<<endl;
-	handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
-
+	if(!isError){
+		handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
+    }else{
+		isError = false ;
+	}
+	
 	
 }
 		| type_specifier ID LPAREN RPAREN compound_statement {
@@ -415,6 +427,15 @@ parameter_list  : parameter_list COMMA type_specifier ID {
 			$$->addChild($1);
 			parameters.push_back(make_pair(toUpper(varType),""));
 			}
+		| error {
+			// attempting to catch syntax error 
+			yyclearin;
+			isError = true;
+			$$ = new ParseTreeNode("error","parameter_list",line);
+			errorFileWriter("Syntax error at parameter list of function definition",line);
+			logFile<<"Error at line no "<<line<<" : Syntax error"<<endl;
+
+		}
  		;
 
  		
@@ -516,6 +537,14 @@ declaration_list : declaration_list COMMA ID {
 			int size = stoi($3->lexeme) ;
 			cout<<"found array size "<<size<<endl;
             handleIdDeclaration($1,size);
+		  }
+
+		  | error {
+			yyclearin;
+			hasDeclListError = true;
+			$$ = new ParseTreeNode("error","declaration_list",line);
+			errorFileWriter("Syntax error at declaration list of variable declaration",line);
+			logFile<<"Error at line no "<<line<<" : Syntax error"<<endl;
 		  }
  		  ;
  		  
@@ -712,6 +741,13 @@ if(symbol->isFunction){
 		
 
 		
+		}
+
+		| error {
+			yyclearin;
+			$$ = new ParseTreeNode("error","expression",line);
+			errorFileWriter("Syntax error at expression of expression statement",line);
+			logFile<<"Error at line no "<<line<<" : Syntax error"<<endl;
 		}	
 	   ;
 			

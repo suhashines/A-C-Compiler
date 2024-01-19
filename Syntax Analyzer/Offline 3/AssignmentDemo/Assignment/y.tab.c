@@ -55,6 +55,8 @@ list<string> argList ;  /*contains the argument list while invoking a function*/
 
 bool definingFunction = false ;
 /*to know the state of the function*/
+bool isError = false ; /*to know if there has been syntax error in function call*/
+bool hasDeclListError = false ;
 
 void yyerror(char *s)
 {
@@ -117,6 +119,7 @@ void printScopeTable(){
 
 
 void handleIdDeclaration(ParseTreeNode* node,int size){
+
 	/*extracting information */
 
 	string lexeme = node->lexeme ;
@@ -252,12 +255,12 @@ void handleFunctionDeclaration(const string&name,const string&returnType,int lin
 #endif
 #ifndef YYSTYPE_IS_DECLARED
 #define YYSTYPE_IS_DECLARED 1
-#line 229 "parser.y"
+#line 232 "parser.y"
 typedef union YYSTYPE{
 	ParseTreeNode* parseTreeNode;
 } YYSTYPE;
 #endif /* !YYSTYPE_IS_DECLARED */
-#line 261 "y.tab.c"
+#line 264 "y.tab.c"
 
 /* compatibility with bison */
 #ifdef YYPARSE_PARAM
@@ -336,84 +339,84 @@ extern int YYPARSE_DECL();
 typedef int YYINT;
 static const YYINT yylhs[] = {                           -1,
     0,    1,    1,    2,    2,    2,    4,    4,    5,    5,
-    7,    7,    7,    7,    8,    8,    3,    6,    6,    6,
-   10,   10,   10,   10,    9,    9,   11,   11,   11,   11,
-   11,   11,   11,   11,   11,   12,   12,   14,   14,   13,
-   13,   15,   15,   16,   16,   17,   17,   18,   18,   19,
-   19,   19,   20,   20,   20,   20,   20,   20,   20,   21,
-   21,   22,   22,
+    7,    7,    7,    7,    7,    8,    8,    3,    6,    6,
+    6,   10,   10,   10,   10,   10,    9,    9,   11,   11,
+   11,   11,   11,   11,   11,   11,   11,   12,   12,   14,
+   14,   13,   13,   13,   15,   15,   16,   16,   17,   17,
+   18,   18,   19,   19,   19,   20,   20,   20,   20,   20,
+   20,   20,   21,   21,   22,   22,
 };
 static const YYINT yylen[] = {                            2,
     1,    2,    1,    1,    1,    1,    6,    5,    6,    5,
-    4,    3,    2,    1,    3,    2,    3,    1,    1,    1,
-    3,    6,    1,    4,    1,    2,    1,    1,    1,    7,
-    5,    7,    5,    5,    3,    1,    2,    1,    4,    1,
-    3,    1,    3,    1,    3,    1,    3,    1,    3,    2,
-    2,    1,    1,    4,    3,    1,    1,    2,    2,    1,
-    0,    3,    1,
+    4,    3,    2,    1,    1,    3,    2,    3,    1,    1,
+    1,    3,    6,    1,    4,    1,    1,    2,    1,    1,
+    1,    7,    5,    7,    5,    5,    3,    1,    2,    1,
+    4,    1,    3,    1,    1,    3,    1,    3,    1,    3,
+    1,    3,    2,    2,    1,    1,    4,    3,    1,    1,
+    2,    2,    1,    0,    3,    1,
 };
 static const YYINT yydefred[] = {                         0,
-   18,   19,   20,    0,    0,    3,    4,    5,    6,    0,
-    2,    0,    0,    0,    0,    0,   17,    0,    0,    0,
-    0,    0,    0,    8,   10,   13,    0,    0,   24,    0,
-    0,    0,    0,    0,    0,    0,    0,   16,   36,   56,
-   57,    0,    0,   27,    0,   29,    0,   25,   28,    0,
-    0,   40,    0,    0,    0,   48,   52,    7,    9,    0,
-    0,    0,    0,    0,    0,    0,    0,   51,    0,   50,
-    0,    0,    0,   15,   26,   37,   58,   59,    0,    0,
-    0,    0,    0,   11,   22,    0,    0,    0,   35,    0,
-   55,   63,    0,    0,    0,   41,   43,    0,    0,   49,
-    0,    0,    0,    0,   54,    0,   39,    0,    0,   33,
-   34,   62,    0,    0,   32,   30,
+   19,   20,   21,    0,    0,    3,    4,    5,    6,    0,
+    2,   26,    0,    0,    0,    0,    0,   18,   15,    0,
+    0,    0,    0,    0,    0,    8,   10,   13,    0,    0,
+   25,    0,   44,    0,    0,    0,    0,    0,    0,    0,
+   17,   38,   59,   60,    0,    0,   29,    0,   31,    0,
+   27,   30,    0,    0,   42,    0,    0,    0,   51,   55,
+    7,    9,    0,    0,    0,    0,    0,    0,    0,    0,
+   54,    0,   53,    0,    0,    0,   16,   28,   39,   61,
+   62,    0,    0,    0,    0,    0,   11,   23,    0,    0,
+    0,   37,    0,   58,   66,    0,    0,    0,   43,   46,
+    0,    0,   52,    0,    0,    0,    0,   57,    0,   41,
+    0,    0,   35,   36,   65,    0,    0,   34,   32,
 };
 #if defined(YYDESTRUCT_CALL) || defined(YYSTYPE_TOSTRING)
 static const YYINT yystos[] = {                           0,
   263,  265,  267,  296,  297,  298,  299,  300,  301,  302,
-  298,  293,  306,  275,  279,  281,  282,  276,  302,  303,
-  286,  293,  277,  282,  304,  293,  276,  281,  280,  279,
-  257,  259,  260,  268,  273,  274,  275,  278,  282,  286,
-  287,  290,  293,  299,  302,  304,  305,  307,  308,  309,
-  310,  311,  312,  313,  314,  315,  316,  282,  304,  302,
-  286,  275,  275,  275,  309,  275,  310,  315,  309,  315,
-  275,  279,  293,  278,  307,  282,  283,  284,  285,  288,
-  289,  290,  292,  293,  280,  309,  308,  309,  282,  293,
-  276,  311,  317,  318,  309,  311,  312,  313,  314,  315,
-  276,  308,  276,  276,  276,  281,  280,  307,  309,  307,
-  282,  311,  258,  276,  307,  307,
+  298,  256,  293,  306,  275,  279,  281,  282,  256,  276,
+  302,  303,  286,  293,  277,  282,  304,  293,  276,  281,
+  280,  279,  256,  257,  259,  260,  268,  273,  274,  275,
+  278,  282,  286,  287,  290,  293,  299,  302,  304,  305,
+  307,  308,  309,  310,  311,  312,  313,  314,  315,  316,
+  282,  304,  302,  286,  275,  275,  275,  309,  275,  310,
+  315,  309,  315,  275,  279,  293,  278,  307,  282,  283,
+  284,  285,  288,  289,  290,  292,  293,  280,  309,  308,
+  309,  282,  293,  276,  311,  317,  318,  309,  311,  312,
+  313,  314,  315,  276,  308,  276,  276,  276,  281,  280,
+  307,  309,  307,  282,  311,  258,  276,  307,  307,
 };
 #endif /* YYDESTRUCT_CALL || YYSTYPE_TOSTRING */
 static const YYINT yydgoto[] = {                          4,
-    5,    6,   44,    8,    9,   45,   20,   46,   47,   13,
-   48,   49,   50,   51,   52,   53,   54,   55,   56,   57,
-   93,   94,
+    5,    6,   47,    8,    9,   48,   22,   49,   50,   14,
+   51,   52,   53,   54,   55,   56,   57,   58,   59,   60,
+   96,   97,
 };
-static const YYINT yysindex[] = {                      -136,
-    0,    0,    0,    0, -136,    0,    0,    0,    0, -286,
-    0, -239, -149, -166, -271, -263,    0, -250, -260, -226,
- -232, -228, -184,    0,    0,    0, -215, -136,    0, -223,
- -198, -183, -179, -233, -171, -233, -233,    0,    0,    0,
-    0, -233, -201,    0, -169,    0, -152,    0,    0, -168,
- -165,    0, -160, -140, -156,    0,    0,    0,    0, -151,
- -134, -233,  -79, -233, -138, -137, -132,    0, -115,    0,
- -233, -233, -114,    0,    0,    0,    0,    0, -233, -233,
- -233, -233, -233,    0,    0, -108,  -79, -102,    0, -100,
-    0,    0,  -95,  -93,  -87,    0,    0,  -90, -156,    0,
-  -88, -233,  -88,  -85,    0, -233,    0,  -57,  -72,    0,
-    0,    0,  -88,  -88,    0,    0,
+static const YYINT yysindex[] = {                      -167,
+    0,    0,    0,    0, -167,    0,    0,    0,    0, -245,
+    0,    0, -178, -272, -201, -259, -269,    0,    0, -252,
+ -242, -216, -226, -212, -183,    0,    0,    0, -214, -167,
+    0, -207,    0, -188, -186, -173, -253, -162,  -63, -253,
+    0,    0,    0,    0,  -63, -164,    0, -243,    0, -151,
+    0,    0, -161, -165,    0, -163, -273, -158,    0,    0,
+    0,    0, -150, -135, -253,  -77, -253, -152, -146, -155,
+    0, -124,    0,  -63, -253, -126,    0,    0,    0,    0,
+    0,  -63,  -63,  -63,  -63,  -63,    0,    0, -116,  -77,
+ -115,    0, -114,    0,    0, -112, -106, -123,    0,    0,
+ -125, -158,    0,  -87, -253,  -87, -105,    0,  -63,    0,
+  -92,  -94,    0,    0,    0,  -87,  -87,    0,    0,
 };
 static const YYINT yyrindex[] = {                         0,
-    0,    0,    0,    0,  206,    0,    0,    0,    0,    0,
-    0, -122,    0,    0,    0,    0,    0,    0, -196,    0,
-    0, -118,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,  183,    0,    0,    0,    0,    0,
+    0,    0, -149,    0,    0,    0,    0,    0,    0,    0,
+ -198,    0,    0, -131,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0, -264,    0,    0,    0,    0,    0,    0,    0,
- -224,    0, -194,  -46,  -98,    0,    0,    0,    0, -181,
-    0,    0,    0,    0,    0,    0,  -64,    0,    0,    0,
-  -67,    0, -122,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,  -48,    0,    0,    0,    0,
+    0,    0,    0,  -22,    0, -224, -262,   -7,    0,    0,
+    0,    0, -195,    0,    0,    0,    0,    0,    0,  -33,
+    0,    0,    0,  -91,    0, -149,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,  -66,    0,    0,    0,  -32,  -49,    0,
-    0,    0,    0,    0,    0,    0,    0, -120,    0,    0,
-    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,  -85,    0,    0,    0,
+  -62,   -4,    0,    0,    0,    0,    0,    0,    0,    0,
+ -119,    0,    0,    0,    0,    0,    0,    0,    0,
 };
 #if YYBTYACC
 static const YYINT yycindex[] = {                         0,
@@ -428,73 +431,82 @@ static const YYINT yycindex[] = {                         0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,
 };
 #endif
 static const YYINT yygindex[] = {                         0,
-    0,  208,  112,    0,    0,    9,    0,   -5,    0,    0,
-  -42,  -53,  -33,  -36,  -68,  135,  138,  139,  -34,    0,
+    0,  179,   88,    0,    0,   23,    0,   12,    0,    0,
+  -45,  -54,  -36,  -39,  -67,  106,  108,  109,  -37,    0,
     0,    0,
 };
-#define YYTABLESIZE 256
-static const YYINT yytable[] = {                         67,
-   65,   68,   92,   69,   75,   67,   12,   70,   10,   87,
-   96,   38,   25,   10,   21,   38,   38,   38,   38,   38,
-   38,   59,   19,   38,   38,   38,   23,   38,   86,   22,
-   88,   24,   26,  102,   67,   14,   60,  112,   95,   15,
-   36,   37,   67,   67,   67,   67,   67,   29,  100,   27,
-   30,   53,   40,   41,   28,   53,   42,   53,  108,   43,
-  110,   23,   61,   53,   53,   53,   58,   53,  109,   67,
-  115,  116,   31,   71,   32,   33,   62,   72,    1,   14,
-    2,   42,    3,   34,   14,   42,   42,   42,   35,   36,
-   37,   63,   23,   38,   12,   64,    1,   39,    2,   12,
-    3,   40,   41,   66,   31,   42,   32,   33,   43,   18,
-    1,    7,    2,   76,    3,   34,    7,   77,   78,   79,
-   35,   36,   37,   73,   23,   74,    1,   80,    2,   39,
-    3,   16,   17,   40,   41,   83,   31,   42,   31,   31,
-   43,   84,   31,   89,   31,   85,   31,   31,   81,   82,
-   77,   78,   31,   31,   31,   90,   31,   31,   23,   23,
-   91,   31,   21,   21,   15,   31,   31,  101,   31,   31,
-   32,   33,   31,  103,    1,  104,    2,   46,    3,   34,
-  105,   46,   46,   46,   35,   36,   37,  106,   23,   46,
-   46,   46,  107,   39,   36,   37,  111,   40,   41,   82,
-  113,   42,   39,  114,   43,    1,   40,   41,   61,   60,
-   42,   53,   11,   43,   97,   53,   53,   53,   98,    0,
-   99,    0,    0,   53,   53,   53,   47,   53,    0,   44,
-   47,   47,   47,   44,   44,   44,    0,    0,   47,   47,
-   47,   44,    0,   45,    0,    0,    0,   45,   45,   45,
-    0,    0,    0,    0,    0,   45,
+#define YYTABLESIZE 286
+static const YYINT yytable[] = {                         70,
+   68,   71,   33,   72,   78,   70,   95,   73,   17,   18,
+   12,   90,   12,   47,   99,   84,   85,   47,   47,   47,
+   39,   40,   10,   24,   25,   47,   23,   10,   89,   26,
+   91,   27,   43,   44,   70,  105,   45,   21,   98,   46,
+   62,  115,   70,   70,   70,   70,   70,   13,  103,   76,
+   28,   45,   63,   31,   19,   45,   45,   45,  111,   29,
+  113,    1,   25,    2,   30,    3,   32,   61,  112,   70,
+  118,  119,   33,   34,   20,   35,   36,   14,   64,    1,
+   12,    2,   14,    3,   37,   12,   65,    7,   66,   38,
+   39,   40,    7,   25,   41,    1,   15,    2,   42,    3,
+   16,   67,   43,   44,   33,   34,   45,   35,   36,   46,
+   74,    1,   69,    2,   75,    3,   37,   80,   81,   82,
+   79,   38,   39,   40,   83,   25,   77,   80,   81,   92,
+   42,   24,   24,   86,   43,   44,   33,   33,   45,   33,
+   33,   46,   87,   33,   88,   33,   93,   33,   33,   22,
+   22,   94,   16,   33,   33,   33,  110,   33,   33,  104,
+  106,  107,   33,  108,   85,  116,   33,   33,   33,   34,
+   33,   35,   36,   33,  109,    1,  114,    2,   33,    3,
+   37,  117,    1,   11,   64,   38,   39,   40,  100,   25,
+   63,  101,    0,  102,   42,    0,   39,   40,   43,   44,
+    0,    0,   45,    0,   42,   46,    0,    0,   43,   44,
+   39,   40,   45,   48,    0,   46,    0,   48,   48,   48,
+    0,    0,   43,   44,    0,   48,   45,   40,    0,   46,
+    0,   40,   40,   40,   40,   40,   40,    0,    0,   40,
+   40,   40,   56,   40,    0,    0,   56,   56,   56,    0,
+    0,    0,    0,   56,   56,   56,   56,   56,   56,   56,
+    0,    0,    0,    0,    0,   56,   56,   56,   49,   56,
+    0,   50,   49,   49,   49,   50,   50,   50,    0,    0,
+   49,   49,   49,   50,   50,   50,
 };
-static const YYINT yycheck[] = {                         36,
-   34,   36,   71,   37,   47,   42,  293,   42,    0,   63,
-   79,  276,   18,    5,  286,  280,  281,  282,  283,  284,
-  285,   27,   14,  288,  289,  290,  277,  292,   62,  293,
-   64,  282,  293,   87,   71,  275,   28,  106,   72,  279,
-  274,  275,   79,   80,   81,   82,   83,  280,   83,  276,
-  279,  276,  286,  287,  281,  280,  290,  282,  101,  293,
-  103,  277,  286,  288,  289,  290,  282,  292,  102,  106,
-  113,  114,  257,  275,  259,  260,  275,  279,  263,  276,
-  265,  276,  267,  268,  281,  280,  281,  282,  273,  274,
-  275,  275,  277,  278,  276,  275,  263,  282,  265,  281,
-  267,  286,  287,  275,  257,  290,  259,  260,  293,  276,
-  263,    0,  265,  282,  267,  268,    5,  283,  284,  285,
-  273,  274,  275,  293,  277,  278,  263,  288,  265,  282,
-  267,  281,  282,  286,  287,  292,  257,  290,  259,  260,
-  293,  293,  263,  282,  265,  280,  267,  268,  289,  290,
-  283,  284,  273,  274,  275,  293,  277,  278,  281,  282,
-  276,  282,  281,  282,  279,  286,  287,  276,  257,  290,
-  259,  260,  293,  276,  263,  276,  265,  276,  267,  268,
-  276,  280,  281,  282,  273,  274,  275,  281,  277,  288,
-  289,  290,  280,  282,  274,  275,  282,  286,  287,  290,
-  258,  290,  282,  276,  293,    0,  286,  287,  276,  276,
-  290,  276,    5,  293,   80,  280,  281,  282,   81,   -1,
-   82,   -1,   -1,  288,  289,  290,  276,  292,   -1,  276,
-  280,  281,  282,  280,  281,  282,   -1,   -1,  288,  289,
-  290,  288,   -1,  276,   -1,   -1,   -1,  280,  281,  282,
-   -1,   -1,   -1,   -1,   -1,  288,
+static const YYINT yycheck[] = {                         39,
+   37,   39,  256,   40,   50,   45,   74,   45,  281,  282,
+  256,   66,  256,  276,   82,  289,  290,  280,  281,  282,
+  274,  275,    0,  293,  277,  288,  286,    5,   65,  282,
+   67,   20,  286,  287,   74,   90,  290,   15,   75,  293,
+   29,  109,   82,   83,   84,   85,   86,  293,   86,  293,
+  293,  276,   30,  280,  256,  280,  281,  282,  104,  276,
+  106,  263,  277,  265,  281,  267,  279,  282,  105,  109,
+  116,  117,  256,  257,  276,  259,  260,  276,  286,  263,
+  276,  265,  281,  267,  268,  281,  275,    0,  275,  273,
+  274,  275,    5,  277,  278,  263,  275,  265,  282,  267,
+  279,  275,  286,  287,  256,  257,  290,  259,  260,  293,
+  275,  263,  275,  265,  279,  267,  268,  283,  284,  285,
+  282,  273,  274,  275,  288,  277,  278,  283,  284,  282,
+  282,  281,  282,  292,  286,  287,  256,  257,  290,  259,
+  260,  293,  293,  263,  280,  265,  293,  267,  268,  281,
+  282,  276,  279,  273,  274,  275,  280,  277,  278,  276,
+  276,  276,  282,  276,  290,  258,  286,  287,  256,  257,
+  290,  259,  260,  293,  281,  263,  282,  265,  256,  267,
+  268,  276,    0,    5,  276,  273,  274,  275,   83,  277,
+  276,   84,   -1,   85,  282,   -1,  274,  275,  286,  287,
+   -1,   -1,  290,   -1,  282,  293,   -1,   -1,  286,  287,
+  274,  275,  290,  276,   -1,  293,   -1,  280,  281,  282,
+   -1,   -1,  286,  287,   -1,  288,  290,  276,   -1,  293,
+   -1,  280,  281,  282,  283,  284,  285,   -1,   -1,  288,
+  289,  290,  276,  292,   -1,   -1,  280,  281,  282,   -1,
+   -1,   -1,   -1,  276,  288,  289,  290,  280,  292,  282,
+   -1,   -1,   -1,   -1,   -1,  288,  289,  290,  276,  292,
+   -1,  276,  280,  281,  282,  280,  281,  282,   -1,   -1,
+  288,  289,  290,  288,  289,  290,
 };
 #if YYBTYACC
 static const YYINT yyctable[] = {                        -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
@@ -566,6 +578,7 @@ static const char *const yyrule[] = {
 "parameter_list : parameter_list COMMA type_specifier",
 "parameter_list : type_specifier ID",
 "parameter_list : type_specifier",
+"parameter_list : error",
 "compound_statement : LCURL statements RCURL",
 "compound_statement : LCURL RCURL",
 "var_declaration : type_specifier declaration_list SEMICOLON",
@@ -576,6 +589,7 @@ static const char *const yyrule[] = {
 "declaration_list : declaration_list COMMA ID LTHIRD CONST_INT RTHIRD",
 "declaration_list : ID",
 "declaration_list : ID LTHIRD CONST_INT RTHIRD",
+"declaration_list : error",
 "statements : statement",
 "statements : statements statement",
 "statement : var_declaration",
@@ -593,6 +607,7 @@ static const char *const yyrule[] = {
 "variable : ID LTHIRD expression RTHIRD",
 "expression : logic_expression",
 "expression : variable ASSIGNOP logic_expression",
+"expression : error",
 "logic_expression : rel_expression",
 "logic_expression : rel_expression LOGICOP rel_expression",
 "rel_expression : simple_expression",
@@ -746,7 +761,7 @@ static YYINT  *yylexp = 0;
 
 static YYINT  *yylexemes = 0;
 #endif /* YYBTYACC */
-#line 991 "parser.y"
+#line 1022 "parser.y"
 int main(int argc,char *argv[])
 {
 	FILE *fp ;
@@ -775,7 +790,7 @@ int main(int argc,char *argv[])
 	return 0;
 }
 
-#line 779 "y.tab.c"
+#line 794 "y.tab.c"
 
 /* For use in generated program */
 #define yydepth (int)(yystack.s_mark - yystack.s_base)
@@ -1446,7 +1461,7 @@ yyreduce:
     switch (yyn)
     {
 case 1:
-#line 256 "parser.y"
+#line 259 "parser.y"
 	{
 		logFileWriter("start","program");
 		summaryWriter();
@@ -1454,59 +1469,59 @@ case 1:
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		printParseTree(yyval.parseTreeNode,0);
 	}
-#line 1458 "y.tab.c"
+#line 1473 "y.tab.c"
 break;
 case 2:
-#line 265 "parser.y"
+#line 268 "parser.y"
 	{
 	logFileWriter("program","program unit");
 	yyval.parseTreeNode = new ParseTreeNode("program");
 	yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 }
-#line 1468 "y.tab.c"
+#line 1483 "y.tab.c"
 break;
 case 3:
-#line 271 "parser.y"
+#line 274 "parser.y"
 	{logFileWriter("program","unit");
 	
 	yyval.parseTreeNode = new ParseTreeNode("program");
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	
 	}
-#line 1478 "y.tab.c"
+#line 1493 "y.tab.c"
 break;
 case 4:
-#line 279 "parser.y"
+#line 282 "parser.y"
 	{
 	logFileWriter("unit","var_declaration");
 	yyval.parseTreeNode = new ParseTreeNode("unit");
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 }
-#line 1487 "y.tab.c"
+#line 1502 "y.tab.c"
 break;
 case 5:
-#line 284 "parser.y"
+#line 287 "parser.y"
 	{
 		logFileWriter("unit","func_declaration");
 		yyval.parseTreeNode = new ParseTreeNode("unit");
 	    yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		definingFunction= false ;
 	 }
-#line 1497 "y.tab.c"
+#line 1512 "y.tab.c"
 break;
 case 6:
-#line 290 "parser.y"
+#line 293 "parser.y"
 	{
 		logFileWriter("unit","func_definition");
 		yyval.parseTreeNode = new ParseTreeNode("unit");
 	    yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		definingFunction= true;
 	 }
-#line 1507 "y.tab.c"
+#line 1522 "y.tab.c"
 break;
 case 7:
-#line 298 "parser.y"
+#line 301 "parser.y"
 	{
 	logFileWriter("func_declaration","type_specifier ID LPAREN parameter_list RPAREN SEMICOLON");
     yyval.parseTreeNode = new ParseTreeNode("func_declaration");
@@ -1524,10 +1539,10 @@ case 7:
 	handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
 
 }
-#line 1528 "y.tab.c"
+#line 1543 "y.tab.c"
 break;
 case 8:
-#line 315 "parser.y"
+#line 318 "parser.y"
 	{
 			logFileWriter("func_declaration","type_specifier ID LPAREN RPAREN SEMICOLON");
 		    yyval.parseTreeNode = new ParseTreeNode("func_declaration");
@@ -1542,10 +1557,10 @@ case 8:
 			 funcReturnType = yystack.l_mark[-4].parseTreeNode->lastFoundLexeme ;
 	        handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
 		}
-#line 1546 "y.tab.c"
+#line 1561 "y.tab.c"
 break;
 case 9:
-#line 331 "parser.y"
+#line 334 "parser.y"
 	{
 	logFileWriter("func_definition","type_specifier ID LPAREN parameter_list RPAREN compound_statement");
    
@@ -1569,14 +1584,18 @@ case 9:
 	int discoveryLine = yystack.l_mark[-4].parseTreeNode->startLine;
 	funcReturnType = yystack.l_mark[-5].parseTreeNode->lastFoundLexeme ;
 	/*cout<<"My return type is "<<funcReturnType<<endl;*/
-	handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
-
+	if(!isError){
+		handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
+    }else{
+		isError = false ;
+	}
+	
 	
 }
-#line 1577 "y.tab.c"
+#line 1596 "y.tab.c"
 break;
 case 10:
-#line 358 "parser.y"
+#line 365 "parser.y"
 	{
 			logFileWriter("func_definition","type_specifier ID LPAREN RPAREN compound_statement");
 		    yyval.parseTreeNode = new ParseTreeNode("func_definition");
@@ -1593,10 +1612,10 @@ case 10:
 	        handleFunctionDeclaration(funcName,toUpper(funcReturnType),discoveryLine);
 
 		}
-#line 1597 "y.tab.c"
+#line 1616 "y.tab.c"
 break;
 case 11:
-#line 377 "parser.y"
+#line 384 "parser.y"
 	{
 	logFileWriter("parameter_list","parameter_list COMMA type_specifier ID");
 	yyval.parseTreeNode = new ParseTreeNode("parameter_list");
@@ -1611,10 +1630,10 @@ case 11:
     
 
 	}
-#line 1615 "y.tab.c"
+#line 1634 "y.tab.c"
 break;
 case 12:
-#line 391 "parser.y"
+#line 398 "parser.y"
 	{
 			logFileWriter("parameter_list","parameter_list COMMA type_specifier");
 			yyval.parseTreeNode = new ParseTreeNode("parameter_list");
@@ -1625,10 +1644,10 @@ case 12:
 			parameters.push_back(make_pair(toUpper(varType),""));
 
 			}
-#line 1629 "y.tab.c"
+#line 1648 "y.tab.c"
 break;
 case 13:
-#line 401 "parser.y"
+#line 408 "parser.y"
 	{
 			logFileWriter("parameter_list","type_specifier ID");
 			yyval.parseTreeNode = new ParseTreeNode("parameter_list");
@@ -1640,20 +1659,33 @@ case 13:
 			parameters.push_back(make_pair(toUpper(varType),paramName));
 
 			}
-#line 1644 "y.tab.c"
+#line 1663 "y.tab.c"
 break;
 case 14:
-#line 412 "parser.y"
+#line 419 "parser.y"
 	{
 			logFileWriter("parameter_list","type_specifier");
 			yyval.parseTreeNode = new ParseTreeNode("parameter_list");
 			yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 			parameters.push_back(make_pair(toUpper(varType),""));
 			}
-#line 1654 "y.tab.c"
+#line 1673 "y.tab.c"
 break;
 case 15:
-#line 421 "parser.y"
+#line 425 "parser.y"
+	{
+			/* attempting to catch syntax error */
+			yyclearin;
+			isError = true;
+			yyval.parseTreeNode = new ParseTreeNode("error","parameter_list",line);
+			errorFileWriter("Syntax error at parameter list of function definition",line);
+			logFile<<"Error at line no "<<line<<" : Syntax error"<<endl;
+
+		}
+#line 1686 "y.tab.c"
+break;
+case 16:
+#line 437 "parser.y"
 	{
 	logFileWriter("compound_statement","LCURL statements RCURL");
     yyval.parseTreeNode = new ParseTreeNode("compound_statement");
@@ -1663,10 +1695,10 @@ case 15:
 	printScopeTable();
 	symbolTable.exitScope();
 }
-#line 1667 "y.tab.c"
+#line 1699 "y.tab.c"
 break;
-case 16:
-#line 430 "parser.y"
+case 17:
+#line 446 "parser.y"
 	{
 				logFileWriter("compound_statement","LCURL RCURL");
 			    yyval.parseTreeNode = new ParseTreeNode("compound_statement");
@@ -1675,10 +1707,10 @@ case 16:
 		        printScopeTable();
 	            symbolTable.exitScope();
 			}
-#line 1679 "y.tab.c"
+#line 1711 "y.tab.c"
 break;
-case 17:
-#line 440 "parser.y"
+case 18:
+#line 456 "parser.y"
 	{logFileWriter("var_declaration","type_specifier declaration_list SEMICOLON");
 
 yyval.parseTreeNode = new ParseTreeNode("var_declaration");
@@ -1687,10 +1719,10 @@ yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 
 }
-#line 1691 "y.tab.c"
+#line 1723 "y.tab.c"
 break;
-case 18:
-#line 450 "parser.y"
+case 19:
+#line 466 "parser.y"
 	{
 							logFileWriter("type_specifier","INT");
 							varType = "INT" ;
@@ -1699,30 +1731,30 @@ case 18:
 
 
 					   }
-#line 1703 "y.tab.c"
+#line 1735 "y.tab.c"
 break;
-case 19:
-#line 458 "parser.y"
+case 20:
+#line 474 "parser.y"
 	{
 							logFileWriter("type_specifier", "FLOAT");
 							varType = "FLOAT" ;
 							yyval.parseTreeNode = new ParseTreeNode("type_specifier");
 							yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 					   }
-#line 1713 "y.tab.c"
+#line 1745 "y.tab.c"
 break;
-case 20:
-#line 464 "parser.y"
+case 21:
+#line 480 "parser.y"
 	{
 							logFileWriter("type_specifier", "VOID");
 							varType = "VOID" ;
 							yyval.parseTreeNode = new ParseTreeNode("type_specifier");
 							yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		}
-#line 1723 "y.tab.c"
+#line 1755 "y.tab.c"
 break;
-case 21:
-#line 472 "parser.y"
+case 22:
+#line 488 "parser.y"
 	{
 	logFileWriter("declaration_list","declaration_list COMMA ID");
 	
@@ -1736,10 +1768,10 @@ case 21:
 	
 
 }
-#line 1740 "y.tab.c"
+#line 1772 "y.tab.c"
 break;
-case 22:
-#line 485 "parser.y"
+case 23:
+#line 501 "parser.y"
 	{
 			logFileWriter("declaration_list","declaration_list COMMA ID LSQUARE CONST_INT RSQUARE");
 			yyval.parseTreeNode = new ParseTreeNode("declaration_list");
@@ -1755,10 +1787,10 @@ case 22:
             handleIdDeclaration(yystack.l_mark[-3].parseTreeNode,size);
 			
 		  }
-#line 1759 "y.tab.c"
+#line 1791 "y.tab.c"
 break;
-case 23:
-#line 500 "parser.y"
+case 24:
+#line 516 "parser.y"
 	{
 			logFileWriter("declaration_list","ID");
 			handleIdDeclaration(yystack.l_mark[0].parseTreeNode,-1); /* -1 indicating that it's not an array*/
@@ -1767,10 +1799,10 @@ case 23:
 			yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 			
 			}
-#line 1771 "y.tab.c"
+#line 1803 "y.tab.c"
 break;
-case 24:
-#line 508 "parser.y"
+case 25:
+#line 524 "parser.y"
 	{
 			logFileWriter("declaration_list","ID LSQUARE CONST_INT RSQUARE");
 			yyval.parseTreeNode = new ParseTreeNode("declaration_list");
@@ -1783,18 +1815,29 @@ case 24:
 			cout<<"found array size "<<size<<endl;
             handleIdDeclaration(yystack.l_mark[-3].parseTreeNode,size);
 		  }
-#line 1787 "y.tab.c"
+#line 1819 "y.tab.c"
 break;
-case 25:
-#line 522 "parser.y"
+case 26:
+#line 537 "parser.y"
+	{
+			yyclearin;
+			hasDeclListError = true;
+			yyval.parseTreeNode = new ParseTreeNode("error","declaration_list",line);
+			errorFileWriter("Syntax error at declaration list of variable declaration",line);
+			logFile<<"Error at line no "<<line<<" : Syntax error"<<endl;
+		  }
+#line 1830 "y.tab.c"
+break;
+case 27:
+#line 546 "parser.y"
 	{logFileWriter("statements","statement");
     yyval.parseTreeNode = new ParseTreeNode("statements");
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 }
-#line 1795 "y.tab.c"
+#line 1838 "y.tab.c"
 break;
-case 26:
-#line 526 "parser.y"
+case 28:
+#line 550 "parser.y"
 	{
 		logFileWriter("statements","statements statement");
 	
@@ -1802,38 +1845,38 @@ case 26:
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);   
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);   
 	   }
-#line 1806 "y.tab.c"
+#line 1849 "y.tab.c"
 break;
-case 27:
-#line 535 "parser.y"
+case 29:
+#line 559 "parser.y"
 	{
 	logFileWriter("statement","var_declaration");
     yyval.parseTreeNode = new ParseTreeNode("statement");
     yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 }
-#line 1815 "y.tab.c"
+#line 1858 "y.tab.c"
 break;
-case 28:
-#line 540 "parser.y"
+case 30:
+#line 564 "parser.y"
 	{
 		logFileWriter("statement","expression_statement");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	  }
-#line 1824 "y.tab.c"
+#line 1867 "y.tab.c"
 break;
-case 29:
-#line 545 "parser.y"
+case 31:
+#line 569 "parser.y"
 	{
 		logFileWriter("statement","compound_statement");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		symbolTable.exitScope();
 	  }
-#line 1834 "y.tab.c"
+#line 1877 "y.tab.c"
 break;
-case 30:
-#line 551 "parser.y"
+case 32:
+#line 575 "parser.y"
 	{
 		logFileWriter("statement","FOR LPAREN expression_statement expression_statement expression RPAREN statement");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
@@ -1845,10 +1888,10 @@ case 30:
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	  }
-#line 1849 "y.tab.c"
+#line 1892 "y.tab.c"
 break;
-case 31:
-#line 562 "parser.y"
+case 33:
+#line 586 "parser.y"
 	{
 		logFileWriter("statement","IF LPAREN expression RPAREN statement");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
@@ -1858,10 +1901,10 @@ case 31:
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	  }
-#line 1862 "y.tab.c"
+#line 1905 "y.tab.c"
 break;
-case 32:
-#line 571 "parser.y"
+case 34:
+#line 595 "parser.y"
 	{
 		logFileWriter("statement","IF LAPAREN expression RPAREN statement ELSE statement");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
@@ -1873,10 +1916,10 @@ case 32:
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	  }
-#line 1877 "y.tab.c"
+#line 1920 "y.tab.c"
 break;
-case 33:
-#line 582 "parser.y"
+case 35:
+#line 606 "parser.y"
 	{
 		logFileWriter("statement","WHILE LPAREN expression RPAREN statement");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
@@ -1886,10 +1929,10 @@ case 33:
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	  }
-#line 1890 "y.tab.c"
+#line 1933 "y.tab.c"
 break;
-case 34:
-#line 591 "parser.y"
+case 36:
+#line 615 "parser.y"
 	{
 		logFileWriter("statement","PRINTLN LPAREN ID RPAREN SEMICOLON");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
@@ -1899,10 +1942,10 @@ case 34:
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	  }
-#line 1903 "y.tab.c"
+#line 1946 "y.tab.c"
 break;
-case 35:
-#line 600 "parser.y"
+case 37:
+#line 624 "parser.y"
 	{
 		logFileWriter("statement","RETURN expression SEMICOLON");
 	    yyval.parseTreeNode = new ParseTreeNode("statement");
@@ -1910,20 +1953,20 @@ case 35:
 		yyval.parseTreeNode->addChild(yystack.l_mark[-1].parseTreeNode);
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	  }
-#line 1914 "y.tab.c"
+#line 1957 "y.tab.c"
 break;
-case 36:
-#line 609 "parser.y"
+case 38:
+#line 633 "parser.y"
 	{
 	logFileWriter("expression_statement","SEMICOLON");
     yyval.parseTreeNode = new ParseTreeNode("expression_statement");
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 
 }
-#line 1924 "y.tab.c"
+#line 1967 "y.tab.c"
 break;
-case 37:
-#line 615 "parser.y"
+case 39:
+#line 639 "parser.y"
 	{
 				logFileWriter("expression_statement","expression SEMICOLON");
 			    yyval.parseTreeNode = new ParseTreeNode("expression_statement");
@@ -1931,10 +1974,10 @@ case 37:
 				yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 			
 			}
-#line 1935 "y.tab.c"
+#line 1978 "y.tab.c"
 break;
-case 38:
-#line 624 "parser.y"
+case 40:
+#line 648 "parser.y"
 	{logFileWriter("variable","ID");
 
 yyval.parseTreeNode = new ParseTreeNode("variable");
@@ -1956,10 +1999,10 @@ if(symbolCurr ==nullptr && symbolGlobal ==nullptr){
 }
 
 }
-#line 1960 "y.tab.c"
+#line 2003 "y.tab.c"
 break;
-case 39:
-#line 645 "parser.y"
+case 41:
+#line 669 "parser.y"
 	{
 		logFileWriter("variable","ID LSQUARE expression RSQUARE");
 		
@@ -2005,19 +2048,19 @@ if(symbol->isFunction){
 }
 
 		}
-#line 2009 "y.tab.c"
+#line 2052 "y.tab.c"
 break;
-case 40:
-#line 692 "parser.y"
+case 42:
+#line 716 "parser.y"
 	{logFileWriter("expression","logic_expression");
  yyval.parseTreeNode = new ParseTreeNode("expression");
  yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
  yyval.parseTreeNode->dataType = yystack.l_mark[0].parseTreeNode->dataType ;
  }
-#line 2018 "y.tab.c"
+#line 2061 "y.tab.c"
 break;
-case 41:
-#line 697 "parser.y"
+case 43:
+#line 721 "parser.y"
 	{
 		logFileWriter("expression","variable ASSIGNOP logic_expression");
 		yyval.parseTreeNode = new ParseTreeNode("expression");
@@ -2037,10 +2080,20 @@ case 41:
 
 		
 		}
-#line 2041 "y.tab.c"
+#line 2084 "y.tab.c"
 break;
-case 42:
-#line 718 "parser.y"
+case 44:
+#line 741 "parser.y"
+	{
+			yyclearin;
+			yyval.parseTreeNode = new ParseTreeNode("error","expression",line);
+			errorFileWriter("Syntax error at expression of expression statement",line);
+			logFile<<"Error at line no "<<line<<" : Syntax error"<<endl;
+		}
+#line 2094 "y.tab.c"
+break;
+case 45:
+#line 749 "parser.y"
 	{
 	logFileWriter("logic_expression","rel_expression");
     yyval.parseTreeNode = new ParseTreeNode("logic_expression");
@@ -2048,10 +2101,10 @@ case 42:
 	yyval.parseTreeNode->dataType = yystack.l_mark[0].parseTreeNode->dataType ;
 
 }
-#line 2052 "y.tab.c"
+#line 2105 "y.tab.c"
 break;
-case 43:
-#line 725 "parser.y"
+case 46:
+#line 756 "parser.y"
 	{
 			logFileWriter("logic_expression","rel_expression LOGICOP rel_expression");
 		     yyval.parseTreeNode = new ParseTreeNode("logic_expression");
@@ -2066,20 +2119,20 @@ case 43:
 			 }
 		 
 		 }
-#line 2070 "y.tab.c"
+#line 2123 "y.tab.c"
 break;
-case 44:
-#line 741 "parser.y"
+case 47:
+#line 772 "parser.y"
 	{
 	logFileWriter("rel_expression","simple_expression");
     yyval.parseTreeNode=new ParseTreeNode("rel_expression");
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	yyval.parseTreeNode->dataType = yystack.l_mark[0].parseTreeNode->dataType ;
 }
-#line 2080 "y.tab.c"
+#line 2133 "y.tab.c"
 break;
-case 45:
-#line 747 "parser.y"
+case 48:
+#line 778 "parser.y"
 	{
 			logFileWriter("rel_expression","simple_expression RELOP simple_expression");
 		    yyval.parseTreeNode=new ParseTreeNode("rel_expression");
@@ -2093,20 +2146,20 @@ case 45:
 				yyval.parseTreeNode->dataType = "INT";
 			}
 		}
-#line 2097 "y.tab.c"
+#line 2150 "y.tab.c"
 break;
-case 46:
-#line 762 "parser.y"
+case 49:
+#line 793 "parser.y"
 	{logFileWriter("simple_expression","term");
 yyval.parseTreeNode = new ParseTreeNode("simple_expression");
 yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 yyval.parseTreeNode->dataType = yystack.l_mark[0].parseTreeNode->dataType ;
 
 }
-#line 2107 "y.tab.c"
+#line 2160 "y.tab.c"
 break;
-case 47:
-#line 768 "parser.y"
+case 50:
+#line 799 "parser.y"
 	{
 			logFileWriter("simple_expression","simple_expression ADDOP term");
 			yyval.parseTreeNode = new ParseTreeNode("simple_expression");
@@ -2123,10 +2176,10 @@ case 47:
 			}
             
 			}
-#line 2127 "y.tab.c"
+#line 2180 "y.tab.c"
 break;
-case 48:
-#line 786 "parser.y"
+case 51:
+#line 817 "parser.y"
 	{
 	logFileWriter("term","unary_expression");
 	yyval.parseTreeNode = new ParseTreeNode("term");
@@ -2134,10 +2187,10 @@ case 48:
 	yyval.parseTreeNode->dataType = yystack.l_mark[0].parseTreeNode->dataType ;
 	
 	}
-#line 2138 "y.tab.c"
+#line 2191 "y.tab.c"
 break;
-case 49:
-#line 793 "parser.y"
+case 52:
+#line 824 "parser.y"
 	{
 		logFileWriter("term","term MULOP unary_expression");
 		yyval.parseTreeNode = new ParseTreeNode("term");
@@ -2171,10 +2224,10 @@ case 49:
 
 		
 		}
-#line 2175 "y.tab.c"
+#line 2228 "y.tab.c"
 break;
-case 50:
-#line 828 "parser.y"
+case 53:
+#line 859 "parser.y"
 	{
 	logFileWriter("unary_expression","ADDOP unary_expression");
 	yyval.parseTreeNode = new ParseTreeNode("unary_expression");
@@ -2183,10 +2236,10 @@ case 50:
 	yyval.parseTreeNode->dataType = yystack.l_mark[0].parseTreeNode->dataType ;
 
 	}
-#line 2187 "y.tab.c"
+#line 2240 "y.tab.c"
 break;
-case 51:
-#line 836 "parser.y"
+case 54:
+#line 867 "parser.y"
 	{
 			logFileWriter("unary_expression","NOT unary_expression");
 			yyval.parseTreeNode = new ParseTreeNode("unary_expression");
@@ -2199,20 +2252,20 @@ case 51:
 			/* 	errorFileWriter(error,$2->startLine);*/
 			/* }*/
 			}
-#line 2203 "y.tab.c"
+#line 2256 "y.tab.c"
 break;
-case 52:
-#line 848 "parser.y"
+case 55:
+#line 879 "parser.y"
 	{
 			logFileWriter("unary_expression","factor");
 			yyval.parseTreeNode = new ParseTreeNode("unary_expression");
 			yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
             yyval.parseTreeNode->dataType = yystack.l_mark[0].parseTreeNode->dataType ;
 			}
-#line 2213 "y.tab.c"
+#line 2266 "y.tab.c"
 break;
-case 53:
-#line 856 "parser.y"
+case 56:
+#line 887 "parser.y"
 	{
 	logFileWriter("factor","variable");
 	yyval.parseTreeNode = new ParseTreeNode("factor");
@@ -2220,10 +2273,10 @@ case 53:
 	yyval.parseTreeNode->dataType = yystack.l_mark[0].parseTreeNode->dataType ;
 	
 	}
-#line 2224 "y.tab.c"
+#line 2277 "y.tab.c"
 break;
-case 54:
-#line 863 "parser.y"
+case 57:
+#line 894 "parser.y"
 	{
 		logFileWriter("factor","ID LPAREN argument_list RPAREN");
 		yyval.parseTreeNode = new ParseTreeNode("factor");
@@ -2284,10 +2337,10 @@ case 54:
 		argList.clear();
 		
 		}
-#line 2288 "y.tab.c"
+#line 2341 "y.tab.c"
 break;
-case 55:
-#line 923 "parser.y"
+case 58:
+#line 954 "parser.y"
 	{
 		logFileWriter("factor","LPAREN expression RPAREN");
 		yyval.parseTreeNode = new ParseTreeNode("factor");
@@ -2296,10 +2349,10 @@ case 55:
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		yyval.parseTreeNode->dataType = yystack.l_mark[-1].parseTreeNode->dataType;
 		}
-#line 2300 "y.tab.c"
+#line 2353 "y.tab.c"
 break;
-case 56:
-#line 931 "parser.y"
+case 59:
+#line 962 "parser.y"
 	{
 		logFileWriter("factor","CONST_INT");
 		yyval.parseTreeNode = new ParseTreeNode("factor");
@@ -2307,20 +2360,20 @@ case 56:
 		yyval.parseTreeNode->dataType = "INT";
 		
 		}
-#line 2311 "y.tab.c"
+#line 2364 "y.tab.c"
 break;
-case 57:
-#line 938 "parser.y"
+case 60:
+#line 969 "parser.y"
 	{
 		logFileWriter("factor","CONST_FLOAT");
 		yyval.parseTreeNode = new ParseTreeNode("factor");
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		yyval.parseTreeNode->dataType = "FLOAT";
 		}
-#line 2321 "y.tab.c"
+#line 2374 "y.tab.c"
 break;
-case 58:
-#line 944 "parser.y"
+case 61:
+#line 975 "parser.y"
 	{
 		logFileWriter("factor","variable INCOP");
 		yyval.parseTreeNode = new ParseTreeNode("factor");
@@ -2328,10 +2381,10 @@ case 58:
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		yyval.parseTreeNode->dataType = yystack.l_mark[-1].parseTreeNode->dataType ;
 		}
-#line 2332 "y.tab.c"
+#line 2385 "y.tab.c"
 break;
-case 59:
-#line 951 "parser.y"
+case 62:
+#line 982 "parser.y"
 	{
 		logFileWriter("factor","variable DECOP");
 		yyval.parseTreeNode = new ParseTreeNode("factor");
@@ -2339,28 +2392,28 @@ case 59:
 		yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 		yyval.parseTreeNode->dataType = yystack.l_mark[-1].parseTreeNode->dataType ;
 		}
-#line 2343 "y.tab.c"
+#line 2396 "y.tab.c"
 break;
-case 60:
-#line 960 "parser.y"
+case 63:
+#line 991 "parser.y"
 	{
 	logFileWriter("argument_list","arguments");
 	yyval.parseTreeNode = new ParseTreeNode("argument_list");
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 
 	}
-#line 2353 "y.tab.c"
+#line 2406 "y.tab.c"
 break;
-case 61:
-#line 966 "parser.y"
+case 64:
+#line 997 "parser.y"
 	{
 				/*argument list can be empty but argument list is a valid node*/
 				yyval.parseTreeNode = new ParseTreeNode("argument_list");
 			  }
-#line 2361 "y.tab.c"
+#line 2414 "y.tab.c"
 break;
-case 62:
-#line 972 "parser.y"
+case 65:
+#line 1003 "parser.y"
 	{
 	logFileWriter("arguments","arguments COMMA logic_expression");
 	yyval.parseTreeNode = new ParseTreeNode("arguments");
@@ -2369,10 +2422,10 @@ case 62:
 	yyval.parseTreeNode->addChild(yystack.l_mark[0].parseTreeNode);
 	argList.push_back(yystack.l_mark[0].parseTreeNode->dataType);
 }
-#line 2373 "y.tab.c"
+#line 2426 "y.tab.c"
 break;
-case 63:
-#line 980 "parser.y"
+case 66:
+#line 1011 "parser.y"
 	{
 			logFileWriter("arguments","logic_expression");
 			yyval.parseTreeNode = new ParseTreeNode("arguments");
@@ -2380,9 +2433,9 @@ case 63:
 			/*declare an argument list and push the arguments here*/
 			argList.push_back(yystack.l_mark[0].parseTreeNode->dataType);
 		  }
-#line 2384 "y.tab.c"
+#line 2437 "y.tab.c"
 break;
-#line 2386 "y.tab.c"
+#line 2439 "y.tab.c"
     default:
         break;
     }
