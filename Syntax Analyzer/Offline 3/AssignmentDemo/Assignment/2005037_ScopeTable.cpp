@@ -49,8 +49,10 @@ public:
             id = "1" ;
             return ;
         }
-
-        id = parent->id + "." + to_string(++parent->suffix);
+        int linearId = stoi(parent->id) + (++parent->suffix) ;
+        id = to_string(linearId);
+        
+        //id = parent->id + "." + to_string(++parent->suffix);
     
     }
 
@@ -233,10 +235,10 @@ std::string getTableString()
             continue;
         }
 
-        tableString += "\t" + std::to_string(i + 1)+"-->";
+        tableString += "\t" + std::to_string(i + 1)+"--> ";
 
         while (curr != nullptr)
-        {     tableString += " <" + curr->getName() + "," ;
+        {     tableString += "<" + curr->getName() + "," ;
 
               if(curr->isFunction){
 
@@ -254,7 +256,7 @@ std::string getTableString()
                     tableString += currId->idType ;
                 }
               }
-              tableString += ">";
+              tableString += "> ";
               curr = curr->next;
         }
     

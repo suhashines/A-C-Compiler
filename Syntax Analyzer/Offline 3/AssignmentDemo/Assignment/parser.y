@@ -47,11 +47,11 @@ void printTable(){
 
 
 void logFileWriter(const string &left,const string &right){
-	logFile<<left<<" : "<<right<<endl;
+	logFile<<left<<" : "<<right<<" "<<endl;
 }
 
 void errorFileWriter(const string &errorMsg,int lineCount){
-  
+   error ++ ;
    errorFile<<"Line# "<<lineCount<<": "<<errorMsg<<endl;
 }
 
@@ -72,11 +72,11 @@ void printParseTree(ParseTreeNode *root, int space)
 
     if (root->isLeaf)
     {
-        parseFile << root->token << " : " << root->lexeme << "\t<Line : " << root->startLine << ">\n";
+        parseFile << root->token << " : " << root->lexeme << "\t<Line: " << root->startLine << ">\n";
         return ;
     }
 
-    parseFile<<root->name<<" :"<<root->nameList << " \t<Line : " <<root->startLine <<"-"<<root->endLine<< ">\n";
+    parseFile<<root->name<<" :"<<root->nameList << " \t<Line: " <<root->startLine <<"-"<<root->endLine<< ">\n";
 
     for(ParseTreeNode* node:root->children){
         printParseTree(node,space+1);
@@ -123,7 +123,7 @@ void handleIdDeclaration(ParseTreeNode* node,int size){
 			errorFile<<"Line# "<<lineCount<<": Multiple declaration of '"<<lexeme<<"'\n";
 			error ++ ;
 		}else{
-			errorFile<<"Line# "<<lineCount<<": Conflicting types for '"<<lexeme<<"'\n";
+			errorFile<<"Line# "<<lineCount<<": Conflicting types for'"<<lexeme<<"'\n";
 			error ++ ;
 		}
 
@@ -159,8 +159,10 @@ void handleFunctionDeclaration(const string&name,const string&returnType,int lin
 		if(it->second!="" && !paramName.insert(it->second).second){
             string error = "Redefinition of parameter '"+it->second+"'";
 			errorFileWriter(error,lineCount);
+		}else{
+			functionInfo->addParameter(it->first);
 		}
-		functionInfo->addParameter(it->first);
+		
 		it++ ;
 	  }
 
@@ -257,7 +259,6 @@ start : program
 		$$ = new ParseTreeNode("start");
 		$$->addChild($1);
 		printParseTree($$,0);
-		printScopeTable();
 	}
 	;
 
@@ -320,7 +321,6 @@ func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON {
 	        $$->addChild($4);
 	        $$->addChild($5);
 
-			//at this point varType = returnType ;
 	         funcName = $2->lexeme ;
 	         int discoveryLine = $2->startLine;
 			 funcReturnType = $1->lastFoundLexeme ;
@@ -506,7 +506,7 @@ declaration_list : declaration_list COMMA ID {
 			
 			}
  		  | ID LTHIRD CONST_INT RTHIRD  {
-			logFileWriter("declaration_list","ID LTHIRD CONST_INT RTHIRD");
+			logFileWriter("declaration_list","ID LSQUARE CONST_INT RSQUARE");
 			$$ = new ParseTreeNode("declaration_list");
 			$$->addChild($1);
 			$$->addChild($2);
@@ -643,7 +643,7 @@ if(symbolCurr ==nullptr && symbolGlobal ==nullptr){
 
 }
 	 | ID LTHIRD expression RTHIRD {
-		logFileWriter("variable","ID LTHIRD expression RTHIRD");
+		logFileWriter("variable","ID LSQUARE expression RSQUARE");
 		
 		$$ = new ParseTreeNode("variable");
 		$$->addChild($1);
@@ -673,7 +673,7 @@ if(symbol->isFunction){
 	if(idInfo->size==-1){
 		errorFileWriter(error,$1->startLine);
 		//cout<<"symbol is not an array"<<endl;
-	}else if($3->lastFoundToken=="FLOAT"){
+	}else if($3->dataType=="FLOAT"){
 		//cout<<"symbol is an array with invalid subscript"<<endl;
 		errorFileWriter("Array subscript is not an integer",$1->startLine);
      }else{

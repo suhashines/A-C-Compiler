@@ -279,7 +279,7 @@ println {
 {INT}      {
                 lexLogWriter("CONST_INT",yytext);
                 tokenFileWriter("CONST_INT",yytext);
-                yylval.parseTreeNode = new ParseTreeNode(yytext,"INT",line); 
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"CONST_INT",line); 
                 return CONST_INT ;
 
             }
@@ -288,7 +288,7 @@ println {
 {FLOAT}    {
                 lexLogWriter("CONST_FLOAT",yytext); 
                 tokenFileWriter("CONST_FLOAT",yytext);
-                yylval.parseTreeNode = new ParseTreeNode(yytext,"FLOAT",line); 
+                yylval.parseTreeNode = new ParseTreeNode(yytext,"CONST_FLOAT",line); 
                 return CONST_FLOAT ;
                 
                 }
@@ -388,7 +388,8 @@ println {
                 globalIndent++ ;
                 symbolTable.enterScope();
                 for(auto it=parameters.begin(); it!=parameters.end();it++){
-                    symbolTable.insert(it->second,"ID",it->first,-1);
+                    if(!symbolTable.insert(it->second,"ID",it->first,-1))
+                        break;
                 }
                 yylval.parseTreeNode = new ParseTreeNode(yytext,"LCURL",line);
                 
