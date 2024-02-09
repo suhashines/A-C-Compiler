@@ -1,17 +1,6 @@
 int i,j;
 int main(){
-	i = 1;
+	i = 1+2 ;
    println(i);
-
-   j=2 ;
-   println(j);
-
-   int x,y,z ;
-   y = 3 ;
-   x = 4 ;
-   z = 5 ;
-   println(y);
-   println(x);
-   println(z);
 }
 

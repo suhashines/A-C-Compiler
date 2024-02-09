@@ -113,6 +113,23 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 	string rule = root->name+" :"+root->nameList ;
 
+
+	if(rule=="simple_expression : simple_expression ADDOP term"){
+		traverseAndGenerate(root->children[0]);
+		traverseAndGenerate(root->children[2]);
+
+		string src = root->children[2]->addr;
+		string dest = root->children[0]->addr;
+
+		string code = "\tADD "+dest+","+src+"\n";
+		reg.resetRegister(src);
+		root->addr = dest ; 
+
+		assemblyFile<<code ;
+
+		return ;
+	}
+
 	if(rule=="statement : PRINTLN LPAREN ID RPAREN SEMICOLON"){
 		root->label = ParseTreeNode::getLabel();
 
@@ -124,6 +141,8 @@ void traverseAndGenerate(ParseTreeNode*root){
 		code += "\tCALL new_line\n";
 
 		assemblyFile<<code ;
+
+		return ;
 	}
 
 	if(rule=="variable : ID"){
