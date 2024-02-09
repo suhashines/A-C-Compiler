@@ -14,6 +14,7 @@ public:
     string dataType;
     bool isGlobal ;
     int offset ;
+    string returnAddr ;
 
     SymbolInfo(const string &n, const string &t, SymbolInfo *next = nullptr)
     {

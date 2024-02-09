@@ -1420,9 +1420,7 @@ YY_RULE_SETUP
                 tokenFileWriter("LCURL",yytext);
                 globalIndent++ ;
                 symbolTable.enterScope();
-                offset = 0 ;
                 for(auto it=parameters.begin(); it!=parameters.end();it++){
-                    offset += 2 ;
                     if(!symbolTable.insert(it->second,"ID",it->first,-1,false,offset))
                         break;
                 }
@@ -1433,7 +1431,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 403 "2005037.l"
+#line 401 "2005037.l"
 {
                 lexLogWriter("RCURL",yytext);
                 tokenFileWriter("RCURL",yytext);
@@ -1447,7 +1445,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 413 "2005037.l"
+#line 411 "2005037.l"
 {
                 lexLogWriter("LSQUARE",yytext);
                 tokenFileWriter("LSQUARE",yytext);
@@ -1457,7 +1455,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 419 "2005037.l"
+#line 417 "2005037.l"
 {
                 lexLogWriter("RSQUARE",yytext);
                 tokenFileWriter("RSQUARE",yytext);
@@ -1467,7 +1465,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 425 "2005037.l"
+#line 423 "2005037.l"
 {
                 lexLogWriter("COMMA",yytext);
                 tokenFileWriter("COMMA",yytext);
@@ -1477,7 +1475,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 431 "2005037.l"
+#line 429 "2005037.l"
 {
                 lexLogWriter("SEMICOLON",yytext);
                 tokenFileWriter("SEMICOLON",yytext);
@@ -1487,7 +1485,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 438 "2005037.l"
+#line 436 "2005037.l"
 {
 
                lexLogWriter("COLON",yytext);
@@ -1499,7 +1497,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 448 "2005037.l"
+#line 446 "2005037.l"
 {
     lexeme += yytext ;
     characterLiteral = "" ;
@@ -1509,7 +1507,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 455 "2005037.l"
+#line 453 "2005037.l"
 {
 
     //cout<<"ending char_state"<<endl;
@@ -1560,7 +1558,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 503 "2005037.l"
+#line 501 "2005037.l"
 {
    //cout<<"matching character "<<yytext<<endl;
     lexeme += yytext ;
@@ -1570,7 +1568,7 @@ YY_RULE_SETUP
 case 50:
 /* rule 50 can match eol */
 YY_RULE_SETUP
-#line 509 "2005037.l"
+#line 507 "2005037.l"
 {
     errorWriter("UNFINISHED_CONST_CHAR", lexeme);
     line++;
@@ -1580,7 +1578,7 @@ YY_RULE_SETUP
 }
 	YY_BREAK
 case YY_STATE_EOF(CHAR_STATE):
-#line 517 "2005037.l"
+#line 515 "2005037.l"
 {
         errorWriter("UNFINISHED_CONST_CHAR", lexeme);
         lexeme.clear();
@@ -1592,7 +1590,7 @@ case YY_STATE_EOF(CHAR_STATE):
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 526 "2005037.l"
+#line 524 "2005037.l"
 {   //cout<<"entering string_state"<<endl;
             tempLine = line ;
             characterLiteral = "";
@@ -1603,7 +1601,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 535 "2005037.l"
+#line 533 "2005037.l"
 {
           
                 lexeme += yytext ;
@@ -1622,7 +1620,7 @@ YY_RULE_SETUP
 case 53:
 /* rule 53 can match eol */
 YY_RULE_SETUP
-#line 550 "2005037.l"
+#line 548 "2005037.l"
 {
                         line++ ;
                         lexeme += yytext;
@@ -1631,7 +1629,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 556 "2005037.l"
+#line 554 "2005037.l"
 {    
                         string token ;
 
@@ -1653,7 +1651,7 @@ YY_RULE_SETUP
 case 55:
 /* rule 55 can match eol */
 YY_RULE_SETUP
-#line 574 "2005037.l"
+#line 572 "2005037.l"
 {
                             errorWriter("UNFINISHED_STRING",lexeme);
                             line ++ ;
@@ -1664,14 +1662,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 582 "2005037.l"
+#line 580 "2005037.l"
 {
             characterLiteral += yytext ;
             lexeme += yytext ;
         }
 	YY_BREAK
 case YY_STATE_EOF(STRING_STATE):
-#line 587 "2005037.l"
+#line 585 "2005037.l"
 {
                             
                             errorWriter("UNFINISHED_STRING",lexeme);
@@ -1684,7 +1682,7 @@ case YY_STATE_EOF(STRING_STATE):
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 596 "2005037.l"
+#line 594 "2005037.l"
 {
     lexLogWriter("SINGLE LINE COMMENT",yytext);
 
@@ -1693,7 +1691,7 @@ YY_RULE_SETUP
 case 58:
 /* rule 58 can match eol */
 YY_RULE_SETUP
-#line 601 "2005037.l"
+#line 599 "2005037.l"
 {
             tempLine = line ;
             lexeme += yytext ;
@@ -1704,7 +1702,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 609 "2005037.l"
+#line 607 "2005037.l"
 { 
 
             lexeme += yytext ;
@@ -1715,7 +1713,7 @@ YY_RULE_SETUP
 case 60:
 /* rule 60 can match eol */
 YY_RULE_SETUP
-#line 616 "2005037.l"
+#line 614 "2005037.l"
 {
         lexLogWriter("SINGLE LINE COMMENT",lexeme,tempLine);
         line ++ ;
@@ -1725,7 +1723,7 @@ YY_RULE_SETUP
 }
 	YY_BREAK
 case YY_STATE_EOF(SINGLE_LINE_COMMENT_STATE):
-#line 624 "2005037.l"
+#line 622 "2005037.l"
 {
     lexLogWriter("SINGLE LINE COMMENT",lexeme,tempLine);
     lexeme.clear();
@@ -1737,7 +1735,7 @@ case YY_STATE_EOF(SINGLE_LINE_COMMENT_STATE):
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 633 "2005037.l"
+#line 631 "2005037.l"
 {
         tempLine = line;
         lexeme = yytext ;
@@ -1747,7 +1745,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 640 "2005037.l"
+#line 638 "2005037.l"
 {
     lexeme += yytext ;
     lexLogWriter("MULTI LINE COMMENT",lexeme,tempLine);
@@ -1758,7 +1756,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 648 "2005037.l"
+#line 646 "2005037.l"
 {
     lexeme += yytext ;
 }
@@ -1766,14 +1764,14 @@ YY_RULE_SETUP
 case 64:
 /* rule 64 can match eol */
 YY_RULE_SETUP
-#line 652 "2005037.l"
+#line 650 "2005037.l"
 {
     line ++ ;
     lexeme += yytext ;
 }
 	YY_BREAK
 case YY_STATE_EOF(MULTILINE_COMMENT_STATE):
-#line 657 "2005037.l"
+#line 655 "2005037.l"
 {
     errorWriter("UNFINISHED_COMMENT",lexeme);
     lexeme.clear();
@@ -1785,7 +1783,7 @@ case YY_STATE_EOF(MULTILINE_COMMENT_STATE):
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(NEWLINE_STATE):
-#line 666 "2005037.l"
+#line 664 "2005037.l"
 {
             endOfFile();
             //summaryWriter();
@@ -1794,17 +1792,17 @@ case YY_STATE_EOF(NEWLINE_STATE):
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 672 "2005037.l"
+#line 670 "2005037.l"
 {
         errorWriter("UNRECOGNIZED CHAR",yytext);
     } 
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 677 "2005037.l"
+#line 675 "2005037.l"
 ECHO;
 	YY_BREAK
-#line 1808 "lex.yy.c"
+#line 1806 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2810,7 +2808,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 677 "2005037.l"
+#line 675 "2005037.l"
 
 
 

@@ -8,6 +8,7 @@
 #include<fstream>
 #include<cmath>
 #include "2005037_ParseTreeNode.cpp"
+#include "2005037_Register.cpp"
 
 int ParseTreeNode::labelCount = 0 ;
 
@@ -39,8 +40,12 @@ bool definingFunction = false ;
 bool isError = false ; //to know if there has been syntax error in function call
 bool hasDeclListError = false ;
 
+// ICG starts here  // 
 
-int offset = 0; //for parse tree node
+int offset = 0; //to track location of local variables into the stack
+bool hasPrint = false;
+Register reg ;   // works as a register manager
+
 
 void yyerror(char *s)
 {
@@ -84,10 +89,20 @@ assemblyFile<<".CODE\n" ;
 
 }
 
-void genEndingCode(){
-	//assemblyFile<<"END main\n" ;
+
+string getIdAdddress(const string & id){
+	SymbolInfo* info = symbolTable.lookup(id);
+
+	if(info->isGlobal){
+		return info->getName();
+	}
+
+	return "[BP-"+to_string(info->offset)+"]";
 }
 
+void writeLabel(int label){
+	assemblyFile<<"L"<<label<<":\n";
+}
 
 void traverseAndGenerate(ParseTreeNode*root){
 
@@ -98,11 +113,70 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 	string rule = root->name+" :"+root->nameList ;
 
+	if(rule=="statement : PRINTLN LPAREN ID RPAREN SEMICOLON"){
+		root->label = ParseTreeNode::getLabel();
+
+		writeLabel(root->label);
+
+		hasPrint = true;
+		string code = "\tMOV AX,"+getIdAdddress(root->children[2]->lexeme)+"\n";
+		code += "\tCALL print_output\n";
+		code += "\tCALL new_line\n";
+
+		assemblyFile<<code ;
+	}
+
+	if(rule=="variable : ID"){
+		root->addr = getIdAdddress(root->children[0]->lexeme);
+		return ;
+	}
+
+	if(rule=="factor : CONST_INT"){
+
+		root->addr = reg.getRegister() ;
+		string code = "\tMOV "+root->addr+","+root->children[0]->lexeme+"\n";
+		assemblyFile<<code;
+		return ;
+	}
+
+	if(rule=="unary_expression : factor" || rule=="term : unary_expression" || rule=="simple_expression : term"||rule=="rel_expression : simple_expression"||rule=="logic_expression : rel_expression"){
+		traverseAndGenerate(root->children[0]);
+		root->addr = root->children[0]->addr ;
+		return;
+	}
+
+	if(rule=="expression : variable ASSIGNOP logic_expression"){
+
+		traverseAndGenerate(root->children[0]);
+		traverseAndGenerate(root->children[2]);
+
+		string src = root->children[2]->addr ;
+		string dest = root->children[0]->addr ;
+
+		string code="\tMOV "+dest+","+src+"\n" ;
+
+		assemblyFile<<code;
+
+		root->addr = dest ;
+
+		//now we can reset the source,dest is the new source
+		reg.resetRegister(src);
+
+		return ;
+	}
+
+	if(rule=="expression_statement : expression SEMICOLON" || rule=="statement : expression_statement" || rule=="statements : statement"){
+		traverseAndGenerate(root->children[0]);
+		root->addr = root->children[0]->addr ;
+		return ;
+	}
+
 	if(rule=="var_declaration : type_specifier declaration_list SEMICOLON"){
-
-		root->label = ParseTreeNode::getLabel() ;
-
-		assemblyFile<<"L"<<root->label<<":\n" ;
+		
+		if(!symbolTable.isCurrentScopeGlobal())
+		 {    root->label = ParseTreeNode::getLabel() ;
+		 	  writeLabel(root->label);
+		 }
 
 		traverseAndGenerate(root->children[1]);	
 
@@ -116,6 +190,9 @@ void traverseAndGenerate(ParseTreeNode*root){
 		traverseAndGenerate(root->children[1]);	
 
 		symbolTable.exitScope();
+
+		//reset the register
+		root->addr = root->children[1]->addr ;
 
 		return ;
 	}
@@ -139,8 +216,8 @@ void traverseAndGenerate(ParseTreeNode*root){
 		traverseAndGenerate(root->children[0]) ;
 
 		offset += 2 ;
-		string lexeme = root->children[1]->lexeme ;
-		string token = root->children[1]->token ;
+		string lexeme = root->children[2]->lexeme ;
+		string token = root->children[2]->token ;
 
 		symbolTable.insert(lexeme,token,"INT",-1,symbolTable.isCurrentScopeGlobal(),offset);
 
@@ -175,8 +252,12 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 		assemblyFile<<"RETURN:\n" ;
 
+		//storing the return address
+		SymbolInfo* symbol = symbolTable.lookup(root->children[1]->lexeme);
+		symbol->returnAddr = root->children[4]->addr ;
+
 		//putting SP add amount here//
-		assemblyFile<<"\tADD SP,"<<root->children[4]->offset<<"\n" ;
+		assemblyFile<<"\tADD SP,"<<offset<<"\n" ;
 		assemblyFile<<"\tPOP BP\n";
 		if(root->children[1]->lexeme=="main"){
 			//cout<<"main func ended"<<endl;
@@ -185,8 +266,9 @@ void traverseAndGenerate(ParseTreeNode*root){
 			
 		}else{
 			assemblyFile<<"\tRET\n" ;
-			
 		}
+
+		assemblyFile<<root->children[1]->lexeme<<" ENDP\n";
 
 		return ;
 
@@ -200,15 +282,85 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 }
 
+void genEndingCode(){
+
+	if(hasPrint){
+		// code for including print function
+		assemblyFile<<"\n\n;------print library-------;\n\n" ;
+string code =
+"new_line proc\n\
+    push ax\n\
+    push dx\n\
+    mov ah,2\n\
+    mov dl,0Dh\n\
+    int 21h\n\
+    mov ah,2\n\
+    mov dl,0Ah\n\
+    int 21h\n\
+    pop dx\n\
+    pop ax\n\
+    ret\n\
+    new_line endp\n\
+print_output proc  ;print what is in ax\n\
+    push ax\n\
+    push bx\n\
+    push cx\n\
+    push dx\n\
+    push si\n\
+    lea si,number\n\
+    mov bx,10\n\
+    add si,4\n\
+    cmp ax,0\n\
+    jnge negate\n\
+    print:\n\
+    xor dx,dx\n\
+    div bx\n\
+    mov [si],dl\n\
+    add [si],'0'\n\
+    dec si\n\
+    cmp ax,0\n\
+    jne print\n\
+    inc si\n\
+    lea dx,si\n\
+    mov ah,9\n\
+    int 21h\n\
+    pop si\n\
+    pop dx\n\
+    pop cx\n\
+    pop bx\n\
+    pop ax\n\
+    ret\n\
+    negate:\n\
+    push ax\n\
+    mov ah,2\n\
+    mov dl,'-'\n\
+    int 21h\n\
+    pop ax\n\
+    neg ax\n\
+    jmp print\n\
+    print_output endp\n" ;
+
+	assemblyFile<<code ;
+
+	}
+
+	assemblyFile<<"END main\n" ;
+}
+
 void codeGenerator(ParseTreeNode*root){
 
      genStartingCode();
+
+	 offset = 0 ;
 
 	 traverseAndGenerate(root);
 
 	 genEndingCode();
 
 }
+
+
+
 
 
 void printTable(){

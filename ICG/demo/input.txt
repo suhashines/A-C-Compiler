@@ -1,6 +1,17 @@
-int x,y,z;
-
+int i,j;
 int main(){
+	i = 1;
+   println(i);
+
+   j=2 ;
+   println(j);
+
    int x,y,z ;
-   int d,e,f;
+   y = 3 ;
+   x = 4 ;
+   z = 5 ;
+   println(y);
+   println(x);
+   println(z);
 }
+
