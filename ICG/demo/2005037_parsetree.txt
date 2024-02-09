@@ -1,0 +1,54 @@
+start : program 	<Line: 1-6>
+ program : program unit 	<Line: 1-6>
+  program : unit 	<Line: 1-1>
+   unit : var_declaration 	<Line: 1-1>
+    var_declaration : type_specifier declaration_list SEMICOLON 	<Line: 1-1>
+     type_specifier : INT 	<Line: 1-1>
+      INT : int	<Line: 1>
+     declaration_list : declaration_list COMMA ID 	<Line: 1-1>
+      declaration_list : declaration_list COMMA ID 	<Line: 1-1>
+       declaration_list : ID 	<Line: 1-1>
+        ID : x	<Line: 1>
+       COMMA : ,	<Line: 1>
+       ID : y	<Line: 1>
+      COMMA : ,	<Line: 1>
+      ID : z	<Line: 1>
+     SEMICOLON : ;	<Line: 1>
+  unit : func_definition 	<Line: 3-6>
+   func_definition : type_specifier ID LPAREN RPAREN compound_statement 	<Line: 3-6>
+    type_specifier : INT 	<Line: 3-3>
+     INT : int	<Line: 3>
+    ID : main	<Line: 3>
+    LPAREN : (	<Line: 3>
+    RPAREN : )	<Line: 3>
+    compound_statement : LCURL statements RCURL 	<Line: 3-6>
+     LCURL : {	<Line: 3>
+     statements : statements statement 	<Line: 4-5>
+      statements : statement 	<Line: 4-4>
+       statement : var_declaration 	<Line: 4-4>
+        var_declaration : type_specifier declaration_list SEMICOLON 	<Line: 4-4>
+         type_specifier : INT 	<Line: 4-4>
+          INT : int	<Line: 4>
+         declaration_list : declaration_list COMMA ID 	<Line: 4-4>
+          declaration_list : declaration_list COMMA ID 	<Line: 4-4>
+           declaration_list : ID 	<Line: 4-4>
+            ID : x	<Line: 4>
+           COMMA : ,	<Line: 4>
+           ID : y	<Line: 4>
+          COMMA : ,	<Line: 4>
+          ID : z	<Line: 4>
+         SEMICOLON : ;	<Line: 4>
+      statement : var_declaration 	<Line: 5-5>
+       var_declaration : type_specifier declaration_list SEMICOLON 	<Line: 5-5>
+        type_specifier : INT 	<Line: 5-5>
+         INT : int	<Line: 5>
+        declaration_list : declaration_list COMMA ID 	<Line: 5-5>
+         declaration_list : declaration_list COMMA ID 	<Line: 5-5>
+          declaration_list : ID 	<Line: 5-5>
+           ID : d	<Line: 5>
+          COMMA : ,	<Line: 5>
+          ID : e	<Line: 5>
+         COMMA : ,	<Line: 5>
+         ID : f	<Line: 5>
+        SEMICOLON : ;	<Line: 5>
+     RCURL : }	<Line: 6>

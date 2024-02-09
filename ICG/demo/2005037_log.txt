@@ -1,0 +1,66 @@
+Line# 1: Token <INT> Lexeme int found
+type_specifier : INT 
+Line# 1: Token <ID> Lexeme x found
+Line# 1: Token <COMMA> Lexeme , found
+declaration_list : ID 
+Line# 1: Token <ID> Lexeme y found
+Line# 1: Token <COMMA> Lexeme , found
+declaration_list : declaration_list COMMA ID 
+Line# 1: Token <ID> Lexeme z found
+Line# 1: Token <SEMICOLON> Lexeme ; found
+declaration_list : declaration_list COMMA ID 
+var_declaration : type_specifier declaration_list SEMICOLON 
+unit : var_declaration 
+program : unit 
+Line# 3: Token <INT> Lexeme int found
+type_specifier : INT 
+Line# 3: Token <ID> Lexeme main found
+Line# 3: Token <LPAREN> Lexeme ( found
+Line# 3: Token <RPAREN> Lexeme ) found
+Line# 3: Token <LCURL> Lexeme { found
+Line# 4: Token <INT> Lexeme int found
+type_specifier : INT 
+Line# 4: Token <ID> Lexeme x found
+Line# 4: Token <COMMA> Lexeme , found
+declaration_list : ID 
+Line# 4: Token <ID> Lexeme y found
+Line# 4: Token <COMMA> Lexeme , found
+declaration_list : declaration_list COMMA ID 
+Line# 4: Token <ID> Lexeme z found
+Line# 4: Token <SEMICOLON> Lexeme ; found
+declaration_list : declaration_list COMMA ID 
+var_declaration : type_specifier declaration_list SEMICOLON 
+statement : var_declaration 
+statements : statement 
+Line# 5: Token <INT> Lexeme int found
+type_specifier : INT 
+Line# 5: Token <ID> Lexeme d found
+Line# 5: Token <COMMA> Lexeme , found
+declaration_list : ID 
+Line# 5: Token <ID> Lexeme e found
+Line# 5: Token <COMMA> Lexeme , found
+declaration_list : declaration_list COMMA ID 
+Line# 5: Token <ID> Lexeme f found
+Line# 5: Token <SEMICOLON> Lexeme ; found
+declaration_list : declaration_list COMMA ID 
+var_declaration : type_specifier declaration_list SEMICOLON 
+statement : var_declaration 
+statements : statements statement 
+Line# 6: Token <RCURL> Lexeme } found
+compound_statement : LCURL statements RCURL 
+	ScopeTable# 2
+	1--> <y,INT> 
+	2--> <z,INT> <d,INT> 
+	3--> <e,INT> 
+	4--> <f,INT> 
+	11--> <x,INT> 
+	ScopeTable# 1
+	1--> <y,INT> 
+	2--> <z,INT> 
+	11--> <x,INT> 
+func_definition : type_specifier ID LPAREN RPAREN compound_statement 
+unit : func_definition 
+program : program unit 
+start : program 
+Total Lines: 6
+Total Errors: 0
