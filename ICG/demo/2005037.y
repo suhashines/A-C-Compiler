@@ -54,6 +54,9 @@ void yyerror(char *s)
 }
 
 
+/****************************************************************/
+
+
 void genStartingCode(){
 
 string str = 
@@ -104,6 +107,10 @@ void writeLabel(int label){
 	assemblyFile<<"L"<<label<<":\n";
 }
 
+string formatLabel(int label){
+	return "L"+to_string(label);
+}
+
 void traverseAndGenerate(ParseTreeNode*root){
 
 	if(root->isLeaf){
@@ -113,15 +120,133 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 	string rule = root->name+" :"+root->nameList ;
 
+	if(rule=="rel_expression : simple_expression RELOP simple_expression"){
+		
+		traverseAndGenerate(root->children[0]);
 
-	if(rule=="simple_expression : simple_expression ADDOP term"){
+		string l = reg.getRegister();
+		string code = "\tMOV "+l+","+root->children[0]->addr+"\n" ;
+		reg.resetRegister(root->children[0]->addr);
+		assemblyFile<<code ;
+
+		traverseAndGenerate(root->children[2]);
+
+		string r = reg.getRegister();
+		code = "\tMOV "+r+","+root->children[2]->addr+"\n" ;
+		reg.resetRegister(root->children[2]->addr);
+
+		string operation ;
+
+		string lexeme = root->children[1]->lexeme ;
+
+		if(lexeme=="<") operation = "JL" ;
+		else if(lexeme=="<=") operation = "JLE" ;
+		else if(lexeme==">") operation = "JG" ;
+		else if(lexeme==">=") operation = "JGE" ;
+		else if(lexeme=="==") operation = "JE" ;
+		else if(lexeme=="!=") operation = "JNE" ;
+
+		cout<<"operation selected "<<operation<<endl;
+
+		
+		code += "\tCMP "+l+","+r+"\n" ;
+
+		root->label = (ParseTreeNode::getLabel()) ;
+
+		code +=  "\t"+operation + " "+formatLabel(root->label) + "\n";
+
+		int falseLabel = ParseTreeNode::getLabel() ;
+
+		code += "\tj "+formatLabel(falseLabel) + "\n";
+
+		assemblyFile<<code ;
+
+		writeLabel(root->label);
+		string dest = reg.getRegister();
+
+		code = "\tMOV "+dest+",1\n";
+
+		int finalLabel = ParseTreeNode::getLabel();
+
+		code+= "\tj "+formatLabel(finalLabel) + "\n";
+
+		assemblyFile<<code ;
+
+		writeLabel(falseLabel);
+
+		assemblyFile<<"\tMOV "+dest+",0\n" ;
+
+		root->addr = dest ;
+
+		root->label = finalLabel ;
+
+		writeLabel(finalLabel);
+
+		reg.resetRegister(l,r);
+
+     	return ;
+
+	}
+
+	if(rule=="term : term MULOP unary_expression"){
 		traverseAndGenerate(root->children[0]);
 		traverseAndGenerate(root->children[2]);
 
-		string src = root->children[2]->addr;
-		string dest = root->children[0]->addr;
+		string multiplicand = root->children[0]->addr;
+		string multiplier = root->children[2]->addr;
+		string code ;
+		if(multiplicand != "AX"){
+			code += "\tMOV AX,"+multiplicand+"\n";
+			reg.resetRegister(multiplicand);
+			reg.acquireRegister("AX");
+		}
 
-		string code = "\tADD "+dest+","+src+"\n";
+		string operation ;
+
+		if(root->children[1]->lexeme=="*"){
+			operation= "MUL" ;
+		}else{
+			operation = "DIV" ;
+		}
+
+
+		code += "\t"+operation+" "+multiplier+"\n" ;
+
+		reg.resetRegister(multiplier);
+
+		assemblyFile<<code ;
+
+		if(root->children[1]->lexeme=="%"){
+			root->addr = "DX" ;
+			reg.acquireRegister("DX");
+			}
+		else
+			root->addr = "AX" ;
+
+		return ;
+	}
+
+	if(rule=="simple_expression : simple_expression ADDOP term"){
+
+		traverseAndGenerate(root->children[0]);
+
+		//cout<<"hola hola"<<root->children[0]->addr<<endl ;
+
+		string dest = reg.getRegister();
+
+		//cout<<dest<<endl;
+		
+	    string code = "\tMOV "+dest+","+root->children[0]->addr+"\n" ;
+		reg.resetRegister(root->children[0]->addr);
+		assemblyFile<<code ;
+		code = "";
+		
+		traverseAndGenerate(root->children[2]);
+
+		string src = root->children[2]->addr;
+		
+
+		code += "\tADD "+dest+","+src+"\n";
 		reg.resetRegister(src);
 		root->addr = dest ; 
 
@@ -153,21 +278,28 @@ void traverseAndGenerate(ParseTreeNode*root){
 	if(rule=="factor : CONST_INT"){
 
 		root->addr = reg.getRegister() ;
+		cout<<"factor register"<<root->addr<<endl;
 		string code = "\tMOV "+root->addr+","+root->children[0]->lexeme+"\n";
 		assemblyFile<<code;
 		return ;
 	}
 
-	if(rule=="unary_expression : factor" || rule=="term : unary_expression" || rule=="simple_expression : term"||rule=="rel_expression : simple_expression"||rule=="logic_expression : rel_expression"){
+	if(rule=="unary_expression : factor" || rule=="term : unary_expression" || rule=="simple_expression : term"||rule=="rel_expression : simple_expression"||rule=="logic_expression : rel_expression" || rule=="factor : variable"){
 		traverseAndGenerate(root->children[0]);
 		root->addr = root->children[0]->addr ;
+		root->label = root->children[0]->label;
 		return;
 	}
 
 	if(rule=="expression : variable ASSIGNOP logic_expression"){
 
+		root->label = ParseTreeNode::getLabel();
+		writeLabel(root->label);
+
 		traverseAndGenerate(root->children[0]);
 		traverseAndGenerate(root->children[2]);
+
+
 
 		string src = root->children[2]->addr ;
 		string dest = root->children[0]->addr ;
@@ -184,7 +316,9 @@ void traverseAndGenerate(ParseTreeNode*root){
 		return ;
 	}
 
-	if(rule=="expression_statement : expression SEMICOLON" || rule=="statement : expression_statement" || rule=="statements : statement"){
+
+
+	if(rule=="expression_statement : expression SEMICOLON" || rule=="statement : expression_statement" || rule=="statements : statement" || rule=="logic_expression : rel_expression"){
 		traverseAndGenerate(root->children[0]);
 		root->addr = root->children[0]->addr ;
 		return ;
@@ -203,7 +337,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 	}
 
 	if(rule=="compound_statement : LCURL statements RCURL"){
-		offset = 0 ;
+		
 		symbolTable.enterScope();
 
 		traverseAndGenerate(root->children[1]);	
@@ -251,7 +385,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 	if(rule=="func_definition : type_specifier ID LPAREN RPAREN compound_statement"){
 		cout<<"func def rule matched"<<endl;
-
+		offset = 0 ;
 		string funcName = root->children[1]->lexeme ;
 
 		string code = funcName+" PROC"+"\n" ;
@@ -379,7 +513,7 @@ void codeGenerator(ParseTreeNode*root){
 }
 
 
-
+/* --------------------------------*/
 
 
 void printTable(){

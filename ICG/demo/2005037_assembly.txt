@@ -4,17 +4,27 @@
 	number DB "00000$"
 	i DW 1 DUP (0000H)
 	j DW 1 DUP (0000H)
+	k DW 1 DUP (0000H)
 .CODE
 main PROC
 	MOV AX,@DATA
 	MOV DS,AX
 	PUSH BP
 	MOV BP,SP
-	MOV AX,1
-	MOV BX,2
-	ADD AX,BX
-	MOV i,AX
 L1:
+	MOV AX,1
+	MOV j,AX
+L2:
+	MOV AX,2
+	MOV k,AX
+L3:
+	MOV AX,j
+	MUL k
+	MOV BX,AX
+	MOV AX,5
+	ADD BX,AX
+	MOV i,BX
+L4:
 	MOV AX,i
 	CALL print_output
 	CALL new_line

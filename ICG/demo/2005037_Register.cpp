@@ -33,4 +33,9 @@ public:
         if (registers.find(reg) != registers.end())
             registers[reg] = true; // Mark reg as available
     }
+
+    void acquireRegister(const std::string & reg){
+        if (registers.find(reg) != registers.end())
+            registers[reg] = false; // Mark reg as unavailable
+    }
 };

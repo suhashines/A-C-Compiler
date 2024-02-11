@@ -1,6 +1,10 @@
-int i,j;
-int main(){
-	i = 1+2 ;
-   println(i);
-}
+int i,j,k;
 
+int main(){
+	j = 1;
+	k = 2;
+	
+	i = j*k + 5 ;
+
+	println(i);
+}
