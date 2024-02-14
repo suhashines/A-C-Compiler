@@ -1,16 +1,15 @@
-int main(){
- 
-	int i,j,k,ll ;
+int a,b,c;
 
-    k = 4;
-	ll = 6;
-
-	while(k>0){
-		ll = ll + 3;
-		k--;
-	}
-
-    println(ll);
-
+void func_a(int l,int k,int o){
+	o = 1;
+	k = 5;
+	l = 3 ;
+	int m ;
+	a = 7;
 }
 
+int main(){
+	
+	func_a(a,b,c);
+
+}

@@ -45,7 +45,8 @@ bool hasDeclListError = false ;
 int offset = 0; //to track location of local variables into the stack
 bool hasPrint = false;
 Register reg ;   // works as a register manager
-
+vector<pair<string,int>>params ; 
+int paramOffset ;
 
 void yyerror(char *s)
 {
@@ -100,7 +101,16 @@ string getIdAdddress(const string & id){
 		return info->getName();
 	}
 
-	return "[BP-"+to_string(info->offset)+"]";
+	int offset = info->offset ;
+
+	string base = "BP-" ;
+
+	if(offset<0){
+		offset = -offset ;
+		base = "BP+" ;
+	}
+
+	return "["+base+to_string(offset)+"]";
 }
 
 void writeLabel(int label){
@@ -139,6 +149,58 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 	string rule = root->name+" :"+root->nameList ;
 
+	if(rule=="parameter_list : parameter_list COMMA type_specifier ID"){
+		
+		string lexeme = root->children[3]->lexeme ;
+		paramOffset -= 2 ;
+		params.push_back(make_pair(lexeme,paramOffset));
+		traverseAndGenerate(root->children[0]);
+		return;
+	}
+
+	if(rule=="parameter_list : type_specifier ID"){
+		string lexeme = root->children[1]->lexeme ;
+		paramOffset -= 2 ;
+		params.push_back(make_pair(lexeme,paramOffset));
+		return;
+	}
+
+	if(rule=="func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement"){
+		cout<<"gotcha\n";
+
+		//let us generate dummy func code
+
+		string func_name = root->children[1]->lexeme ;
+		assemblyFile<<func_name<<" PROC\n";
+		assemblyFile<<"\tPUSH BP\n";
+		assemblyFile<<"\tMOV BP,SP\n";
+		
+		params.clear();
+		paramOffset = -2 ;
+
+		traverseAndGenerate(root->children[3]);
+
+		traverseAndGenerate(root->children[5]);
+
+		return;
+	}
+
+	if(rule=="statement : RETURN expression SEMICOLON"){
+		cout<<"return found\n";
+		return;
+	}
+
+	if(rule=="factor : ID LPAREN argument_list RPAREN"){
+		cout<<"func found"<<endl;
+		traverseAndGenerate(root->children[2]);
+
+		string func_name = root->children[0]->lexeme ;
+
+		assemblyFile<<"\tCALL "<<func_name<<endl;
+
+		return ;
+	}
+
 	if(rule=="statement : WHILE LPAREN expression RPAREN statement"){
 		cout<<"while rule matched\n";
 		int startLabel = ParseTreeNode::getLabel();
@@ -152,7 +214,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 		assemblyFile<<cmp(root->children[2]->addr,"1");
 		reg.resetRegister(root->children[2]->addr);
 
-		assemblyFile<<jump("JE",trueLabel);
+		assemblyFile<<jump("JGE",trueLabel);
 		assemblyFile<<jump("jmp",falseLabel);
 
 		writeLabel(trueLabel);
@@ -355,9 +417,11 @@ void traverseAndGenerate(ParseTreeNode*root){
 		string dest = reg.getRegister();
 		string lexeme = root->children[1]->lexeme ;
 		string operation = "ADD";
+		string reverse = "SUB" ;
 
 		if(lexeme == "--"){
 			operation = "SUB";
+			reverse = "ADD" ;
 		}
 
 		string code;
@@ -365,9 +429,9 @@ void traverseAndGenerate(ParseTreeNode*root){
 		code+=mov(dest,root->children[0]->addr);
 		code+="\t"+operation+" "+dest+",1\n";
 		code+=mov(root->children[0]->addr,dest);
+		code += "\t" + reverse + " "+dest+",1\n";
 		assemblyFile<<code ;
-		reg.resetRegister(dest);
-		root->addr = root->children[0]->addr;
+		root->addr = dest;
 		return ;
 	}
 
@@ -599,6 +663,12 @@ void traverseAndGenerate(ParseTreeNode*root){
 		
 		symbolTable.enterScope();
 
+		//insert func_params here
+
+		for(auto it=params.begin(); it!=params.end(); it++){
+			symbolTable.insert(it->first,"ID","INT",-1,symbolTable.isCurrentScopeGlobal(),it->second);
+		}
+
 		traverseAndGenerate(root->children[1]);	
 
 		symbolTable.exitScope();
@@ -662,7 +732,9 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 		traverseAndGenerate(root->children[4]);
 
-		assemblyFile<<"RETURN:\n" ;
+		int retLabel = ParseTreeNode::getLabel();
+
+		writeLabel(retLabel);
 
 		//storing the return address
 		SymbolInfo* symbol = symbolTable.lookup(root->children[1]->lexeme);
@@ -1818,7 +1890,7 @@ argument_list : arguments {
 			  |    {
 				//argument list can be empty but argument list is a valid node
 				$$ = new ParseTreeNode("argument_list");
-			  }
+			       }
 			  ;
 	
 arguments : arguments COMMA logic_expression {

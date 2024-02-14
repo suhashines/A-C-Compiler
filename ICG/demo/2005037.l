@@ -390,6 +390,7 @@ println {
                 tokenFileWriter("LCURL",yytext);
                 globalIndent++ ;
                 symbolTable.enterScope();
+                
                 for(auto it=parameters.begin(); it!=parameters.end();it++){
                     if(!symbolTable.insert(it->second,"ID",it->first,-1,false,offset))
                         break;
