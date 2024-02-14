@@ -1,0 +1,3 @@
+Line# 8: Undeclared variable 'll'
+Line# 8: Undeclared variable 'll'
+Line# 9: Undeclared variable 'k'

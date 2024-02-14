@@ -1,10 +1,16 @@
-int i,j,k;
-
 int main(){
-	j = 1;
-	k = 2;
-	
-	i = j*k + 5 ;
+ 
+	int i,j,k,ll ;
 
-	println(i);
+    k = 4;
+	ll = 6;
+
+	while(k>0){
+		ll = ll + 3;
+		k--;
+	}
+
+    println(ll);
+
 }
+
