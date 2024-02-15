@@ -50,6 +50,7 @@ int paramOffset ;
 int returnLabel ;
 string returnAddr;
 bool hasArray = false;
+bool hasAssignment ;
 
 void yyerror(char *s)
 {
@@ -162,6 +163,13 @@ void traverseAndGenerate(ParseTreeNode*root){
 	}
 
 	string rule = root->name+" :"+root->nameList ;
+
+	if(rule=="factor : LPAREN expression RPAREN"){
+		cout<<"gotcha complex inside if\n";
+		traverseAndGenerate(root->children[1]);
+		root->addr = root->children[1]->addr;
+		return;
+	}
 
 	if(rule=="variable : ID LSQUARE expression RSQUARE"){
 		
@@ -365,6 +373,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 		assemblyFile<<jump("jmp",startLabel);
 
 		writeLabel(falseLabel);
+		reg.resetRegister(root->children[4]->addr);
 
 		return;
 	}
@@ -393,12 +402,14 @@ void traverseAndGenerate(ParseTreeNode*root){
 		writeLabel(trueLabel);
 
 		traverseAndGenerate(root->children[6]);
+		reg.resetRegister(root->children[6]->addr);
+
 		traverseAndGenerate(root->children[4]);
 		assemblyFile<<jump("jmp",startLabel);
 
 		writeLabel(falseLabel);
 
-		reg.resetRegister(root->children[6]->addr,root->children[4]->addr);
+		reg.resetRegister(root->children[4]->addr);
 
 		return;
 	}
@@ -424,6 +435,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 		writeLabel(trueLabel);
 		traverseAndGenerate(root->children[4]);
 		assemblyFile<<jump("jmp",finalLabel);
+		reg.resetRegister(root->children[4]->addr);
 
 		writeLabel(falseLabel);
 
@@ -431,7 +443,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 		writeLabel(finalLabel);
 
-		reg.resetRegister(root->children[4]->addr);
+		reg.resetRegister(root->children[6]->addr);
 		
 		return ;
 	}
@@ -574,6 +586,10 @@ void traverseAndGenerate(ParseTreeNode*root){
 		code += "\t" + reverse + " "+dest+",1\n";
 		assemblyFile<<code ;
 		root->addr = dest;
+
+		if(!hasAssignment){
+			reg.resetRegister(dest);
+		}
 		return ;
 	}
 
@@ -584,11 +600,14 @@ void traverseAndGenerate(ParseTreeNode*root){
 		reg.resetRegister(root->children[0]->addr);
 
 		traverseAndGenerate(root->children[2]);
+		assemblyFile<<push(root->children[2]->addr);
+		reg.resetRegister(root->children[2]->addr);
 
 		string l = reg.getRegister() ;
-		assemblyFile<<"\tPOP "<<l<<endl;
+		string r = reg.getRegister() ;
 
-		string r = root->children[2]->addr ;
+		assemblyFile<<"\tPOP "<<r<<endl;
+		assemblyFile<<"\tPOP "<<l<<endl;
 
 		string operation ;
 
@@ -606,6 +625,8 @@ void traverseAndGenerate(ParseTreeNode*root){
 		
 		string code = cmp(l,r) ;
 
+		reg.resetRegister(l,r);
+
 		root->label = (ParseTreeNode::getLabel()) ;
 
 		code +=  jump(operation,root->label);
@@ -619,7 +640,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 		writeLabel(root->label);
 		string dest = reg.getRegister();
 
-		code = "\tMOV "+dest+",1\n";
+		code = mov(dest,"1") ;
 
 		int finalLabel = ParseTreeNode::getLabel();
 
@@ -629,15 +650,13 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 		writeLabel(falseLabel);
 
-		assemblyFile<<"\tMOV "+dest+",0\n" ;
+		assemblyFile<<mov(dest,"0") ;
 
 		root->addr = dest ;
 
 		root->label = finalLabel ;
 
 		writeLabel(finalLabel);
-
-		reg.resetRegister(l,r);
 
      	return ;
 
@@ -781,6 +800,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 		root->label = ParseTreeNode::getLabel();
 		writeLabel(root->label);
+		hasAssignment = true;
 
 		traverseAndGenerate(root->children[2]);
 		assemblyFile<<push(root->children[2]->addr);
@@ -800,6 +820,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 		//now we can reset the source,dest is the new source
 		reg.resetRegister(src);
+		hasAssignment = false ;
 
 		return ;
 	}
