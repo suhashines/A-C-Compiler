@@ -1,4 +1,0 @@
-Line# 10: Undeclared variable 'i'
-Line# 10: Undeclared variable 'x'
-Line# 12: Undeclared variable 'i'
-Line# 12: Undeclared variable 'x'
