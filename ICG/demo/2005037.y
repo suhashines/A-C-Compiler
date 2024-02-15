@@ -45,8 +45,10 @@ bool hasDeclListError = false ;
 int offset = 0; //to track location of local variables into the stack
 bool hasPrint = false;
 Register reg ;   // works as a register manager
-vector<pair<string,int>>params ; 
+vector<pair<string,int>>params ; //to store func arguments and their offset
 int paramOffset ;
+int returnLabel ;
+string returnAddr;
 
 void yyerror(char *s)
 {
@@ -95,6 +97,7 @@ assemblyFile<<".CODE\n" ;
 
 
 string getIdAdddress(const string & id){
+
 	SymbolInfo* info = symbolTable.lookup(id);
 
 	if(info->isGlobal){
@@ -140,6 +143,10 @@ string jump(const string&jmp,int label){
 	return "\t"+jmp+" L"+to_string(label)+"\n";
 }
 
+string push(const string&reg){
+	return "\tPUSH "+reg+"\n";
+}
+
 void traverseAndGenerate(ParseTreeNode*root){
 
 	if(root->isLeaf){
@@ -148,6 +155,56 @@ void traverseAndGenerate(ParseTreeNode*root){
 	}
 
 	string rule = root->name+" :"+root->nameList ;
+
+	if(rule=="arguments : arguments COMMA logic_expression"){
+
+		traverseAndGenerate(root->children[0]);
+		string dest = reg.getRegister();
+
+		traverseAndGenerate(root->children[2]);
+		
+		assemblyFile<<mov(dest,root->children[2]->addr);
+		reg.resetRegister(root->children[2]->addr);
+
+		assemblyFile<<push(dest);
+
+		reg.resetRegister(dest);
+
+		return;
+	}
+
+	if(rule=="arguments : logic_expression"){
+		traverseAndGenerate(root->children[0]);
+		string dest = reg.getRegister();
+
+		assemblyFile<<mov(dest,root->children[0]->addr);
+		reg.resetRegister(root->children[0]->addr);
+
+		assemblyFile<<push(dest);
+
+		reg.resetRegister(dest);
+
+		return;
+	}
+
+	if(rule=="statement : RETURN expression SEMICOLON"){
+		
+		traverseAndGenerate(root->children[1]);
+		string dest = reg.getRegister();
+
+		if(dest!="CX"){
+			reg.resetRegister(dest);
+			dest = "CX" ;
+		}
+
+		assemblyFile<<mov(dest,root->children[1]->addr);
+		reg.resetRegister(root->children[1]->addr);
+
+		assemblyFile<<jump("jmp",returnLabel);
+		returnAddr = dest ;
+
+		return;
+	}
 
 	if(rule=="parameter_list : parameter_list COMMA type_specifier ID"){
 		
@@ -177,26 +234,50 @@ void traverseAndGenerate(ParseTreeNode*root){
 		
 		params.clear();
 		paramOffset = -2 ;
+		offset = 0 ;
+		returnLabel = 0 ;
+		returnAddr = "" ;
+
+		returnLabel = ParseTreeNode::getLabel();
 
 		traverseAndGenerate(root->children[3]);
 
 		traverseAndGenerate(root->children[5]);
+		
+		int argCount = - (paramOffset + 2) ;
 
-		return;
-	}
+		writeLabel(returnLabel);
 
-	if(rule=="statement : RETURN expression SEMICOLON"){
-		cout<<"return found\n";
+		assemblyFile<<add("SP",to_string(offset));
+		assemblyFile<<"\tPOP BP\n";
+		assemblyFile<<"\tRET "<<argCount<<"\n";
+
+		if(returnAddr!=""){
+			SymbolInfo *info = symbolTable.lookup(func_name);
+			info->returnAddr = returnAddr ;
+			reg.resetRegister(returnAddr);
+			cout<<"resetted "<<returnAddr<<"\n";
+		}
+
+		params.clear();
+
 		return;
 	}
 
 	if(rule=="factor : ID LPAREN argument_list RPAREN"){
 		cout<<"func found"<<endl;
+
 		traverseAndGenerate(root->children[2]);
 
 		string func_name = root->children[0]->lexeme ;
 
 		assemblyFile<<"\tCALL "<<func_name<<endl;
+
+		SymbolInfo *info = symbolTable.lookup(func_name);
+
+		root->addr = info->returnAddr ;
+
+		cout<<root->addr<<" got func reg\n";
 
 		return ;
 	}
@@ -371,8 +452,8 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 			assemblyFile<<code ;
 
-		writeLabel(trueLabel);
-		reg.resetRegister(l,r);
+		    writeLabel(trueLabel);
+		    reg.resetRegister(l,r);
 
 		string ans = reg.getRegister();
 
@@ -438,17 +519,15 @@ void traverseAndGenerate(ParseTreeNode*root){
 	if(rule=="rel_expression : simple_expression RELOP simple_expression"){
 		
 		traverseAndGenerate(root->children[0]);
-
-		string l = reg.getRegister();
-		string code = mov(l,root->children[0]->addr) ;
+		assemblyFile<<push(root->children[0]->addr);
 		reg.resetRegister(root->children[0]->addr);
-		assemblyFile<<code ;
 
 		traverseAndGenerate(root->children[2]);
 
-		string r = reg.getRegister();
-		code = mov(r,root->children[2]->addr) ;
-		reg.resetRegister(root->children[2]->addr);
+		string l = reg.getRegister() ;
+		assemblyFile<<"\tPOP "<<l<<endl;
+
+		string r = root->children[2]->addr ;
 
 		string operation ;
 
@@ -464,11 +543,11 @@ void traverseAndGenerate(ParseTreeNode*root){
 		cout<<"operation selected "<<operation<<endl;
 
 		
-		code += "\tCMP "+l+","+r+"\n" ;
+		string code = cmp(l,r) ;
 
 		root->label = (ParseTreeNode::getLabel()) ;
 
-		code +=  "\t"+operation + " "+formatLabel(root->label) + "\n";
+		code +=  jump(operation,root->label);
 
 		int falseLabel = ParseTreeNode::getLabel() ;
 
@@ -504,17 +583,42 @@ void traverseAndGenerate(ParseTreeNode*root){
 	}
 
 	if(rule=="term : term MULOP unary_expression"){
-		traverseAndGenerate(root->children[0]);
-		traverseAndGenerate(root->children[2]);
+	
+		    string multiplicand, multiplier  ;
 
-		string multiplicand = root->children[0]->addr;
-		string multiplier = root->children[2]->addr;
-		string code ;
+		    traverseAndGenerate(root->children[0]);
+
+            assemblyFile<<push(root->children[0]->addr) ;
+			reg.resetRegister(root->children[0]->addr) ;
+
+		    traverseAndGenerate(root->children[2]);
+            assemblyFile<<push(root->children[2]->addr) ;
+            reg.resetRegister(root->children[2]->addr) ;
+
+		    multiplicand = reg.getRegister();
+			multiplier = reg.getRegister();
+
+			cout<<"first time yoo"<<multiplier<<" "<<multiplicand<<" "<<endl;
+			assemblyFile<<"\tPOP "+multiplier+"\n" ;
+			assemblyFile<<"\tPOP "+multiplicand+"\n" ;
+
+			//some guardian clauses
+
+		   if(multiplier=="AX"){
+			multiplier = reg.getRegister();
+			assemblyFile<<mov(multiplier,"AX");
+		   }
+
+		
+	    string code ;
+
 		if(multiplicand != "AX"){
-			code += "\tMOV AX,"+multiplicand+"\n";
+			code += mov("AX",multiplicand);
 			reg.resetRegister(multiplicand);
 			reg.acquireRegister("AX");
 		}
+
+		cout<<"after check: multiplier "<<multiplier<<"multiplicand "<<multiplicand<<endl;
 
 		string operation ;
 
@@ -527,6 +631,8 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 		code += "\t"+operation+" "+multiplier+"\n" ;
 
+		cout<<code<<endl;
+
 		reg.resetRegister(multiplier);
 
 		assemblyFile<<code ;
@@ -534,33 +640,29 @@ void traverseAndGenerate(ParseTreeNode*root){
 		if(root->children[1]->lexeme=="%"){
 			root->addr = "DX" ;
 			reg.acquireRegister("DX");
+			reg.resetRegister("AX");
 			}
 		else
 			root->addr = "AX" ;
 
-		return ;
+
+		return;
 	}
 
 	if(rule=="simple_expression : simple_expression ADDOP term"){
 
 		traverseAndGenerate(root->children[0]);
 
-		//cout<<"hola hola"<<root->children[0]->addr<<endl ;
-
-		string dest = "BX";
-		reg.acquireRegister("BX");
-
-		//cout<<dest<<endl;
-		
-	    string code = "\tMOV "+dest+","+root->children[0]->addr+"\n" ;
+		assemblyFile<<push(root->children[0]->addr);
 		reg.resetRegister(root->children[0]->addr);
-		assemblyFile<<code ;
-
-		code = "";
 		
 		traverseAndGenerate(root->children[2]);
 
+		string dest = reg.getRegister();
+		assemblyFile<<"\tPOP "+dest<<endl;
+
 		string src = root->children[2]->addr;
+		
 		
 		string operation = "ADD" ;
 		string lexeme = root->children[1]->lexeme ;
@@ -569,7 +671,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 			operation = "SUB" ;
 		}
 
-		code += "\t"+operation+" "+dest+","+src+"\n";
+		string code = "\t"+operation+" "+dest+","+src+"\n";
 		reg.resetRegister(src);
 		root->addr = dest ; 
 
@@ -673,6 +775,8 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 		symbolTable.exitScope();
 
+		//cout<<symbolTable.printAll()<<endl;
+
 		//reset the register
 		root->addr = root->children[1]->addr ;
 
@@ -716,6 +820,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 		cout<<"func def rule matched"<<endl;
 		offset = 0 ;
 		string funcName = root->children[1]->lexeme ;
+		returnAddr="" ;
 
 		string code = funcName+" PROC"+"\n" ;
 
@@ -730,14 +835,15 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 		assemblyFile<<code ;
 
+		returnLabel = ParseTreeNode::getLabel();
+
 		traverseAndGenerate(root->children[4]);
 
-		int retLabel = ParseTreeNode::getLabel();
-
-		writeLabel(retLabel);
+		writeLabel(returnLabel);
 
 		//storing the return address
 		SymbolInfo* symbol = symbolTable.lookup(root->children[1]->lexeme);
+
 		symbol->returnAddr = root->children[4]->addr ;
 
 		//putting SP add amount here//
@@ -753,6 +859,13 @@ void traverseAndGenerate(ParseTreeNode*root){
 		}
 
 		assemblyFile<<root->children[1]->lexeme<<" ENDP\n";
+
+		if(returnAddr!=""){
+			SymbolInfo *info = symbolTable.lookup(funcName);
+			info->returnAddr = returnAddr ;
+			reg.resetRegister(returnAddr);
+			cout<<"resetted "<<returnAddr<<"\n";
+		}
 
 		return ;
 
