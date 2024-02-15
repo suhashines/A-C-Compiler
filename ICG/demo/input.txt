@@ -1,31 +1,18 @@
+int w[10];
+
 int main(){
- 
-	int i,j,k,ll;
- 
-	for(i=0;i<6;i++){
-		println(i);
+	int i;
+	int x[5];
+	x[5] = 0 ;
+	x[4] = 5 ;
+
+	if(x[5]){
+		i = 2*x[5];
+	}else{
+		i = 3*x[4];
 	}
- 
-	k = 4;
-	ll = 6;
-	while(k>0){
-		ll = ll + 3;
-		k--;
-	}
- 
-	println(ll);
-	println(k);
 	
-	k = 4;
-	ll = 6;
-	
-	while(k--){
-		ll = ll + 3;
-	}
- 
-	println(ll);
-	println(k);
- 
- 
-	return 0;
+
+	println(i);
 }
+

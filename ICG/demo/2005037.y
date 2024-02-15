@@ -49,6 +49,7 @@ vector<pair<string,int>>params ; //to store func arguments and their offset
 int paramOffset ;
 int returnLabel ;
 string returnAddr;
+bool hasArray = false;
 
 void yyerror(char *s)
 {
@@ -147,6 +148,12 @@ string push(const string&reg){
 	return "\tPUSH "+reg+"\n";
 }
 
+string pop(const string&reg){
+	return "\tPOP "+reg+"\n";
+}
+
+
+
 void traverseAndGenerate(ParseTreeNode*root){
 
 	if(root->isLeaf){
@@ -155,6 +162,60 @@ void traverseAndGenerate(ParseTreeNode*root){
 	}
 
 	string rule = root->name+" :"+root->nameList ;
+
+	if(rule=="variable : ID LSQUARE expression RSQUARE"){
+		
+		//cout<<"yoo gotcha array\n";
+		string lexeme = root->children[0]->lexeme ;
+		SymbolInfo* info = symbolTable.lookup(lexeme);
+
+		traverseAndGenerate(root->children[2]);
+		assemblyFile<<push(root->children[2]->addr);
+		reg.resetRegister(root->children[2]->addr);
+
+		    assemblyFile<<mov("BX","2");
+			assemblyFile<<pop("AX");
+			assemblyFile<<"\tMUL BX\n" ;
+
+		if(info->isGlobal){
+			cout<<"gotcha global array\n";
+			
+			assemblyFile<<mov("SI","AX");
+			root->addr = lexeme+"["+"SI"+"]" ;
+
+		}else{
+			cout<<"gotcha local array\n";
+			int offset = info->offset ;
+			cout<<"got locals offset "<<offset<<endl;
+			assemblyFile<<mov("BX",to_string(offset));
+			assemblyFile<<sub("BX","AX");
+			assemblyFile<<mov("SI","BX");
+			assemblyFile<<"\tNEG SI\n" ;
+			root->addr ="[BP+SI]" ;
+		}
+		return;
+	}
+
+	if(rule=="declaration_list : ID LSQUARE CONST_INT RSQUARE"){
+		
+		if(symbolTable.isCurrentScopeGlobal()){
+			//already in the symbol table
+			return ;
+		}
+
+		cout<<"local arr\n";
+		string lexeme = root->children[0]->lexeme ;
+		int size = atoi(root->children[2]->lexeme.c_str());
+		assemblyFile<<sub("SP",to_string(2*size));
+
+		offset += 2*size ;
+		cout<<"arr offset "<<offset<<endl;
+
+		symbolTable.insert(lexeme,"ID","INT",size,false,offset);	
+		
+
+		return;
+	}
 
 	if(rule=="arguments : arguments COMMA logic_expression"){
 
@@ -326,7 +387,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 		int trueLabel = ParseTreeNode::getLabel();
 		int falseLabel = ParseTreeNode::getLabel();
 
-		assemblyFile<<jump("JE",trueLabel);
+		assemblyFile<<jump("JGE",trueLabel);
 		assemblyFile<<jump("jmp",falseLabel);
 
 		writeLabel(trueLabel);
@@ -357,7 +418,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 		reg.resetRegister(exp_result);
 
 
-		assemblyFile<<jump("JE",trueLabel);
+		assemblyFile<<jump("JGE",trueLabel);
 		assemblyFile<<jump("jmp",falseLabel);
 
 		writeLabel(trueLabel);
@@ -389,7 +450,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 		reg.resetRegister(exp_result);
 
-		assemblyFile<<jump("JE",trueLabel);
+		assemblyFile<<jump("JGE",trueLabel);
 		assemblyFile<<jump("jmp",finalLabel);
 
 		writeLabel(trueLabel);
@@ -492,7 +553,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 	}
 
 	if(rule=="factor : variable INCOP" || rule=="factor : variable DECOP"){
-		
+		cout<<"factor : variable found\n";
 		traverseAndGenerate(root->children[0]);
 
 		string dest = reg.getRegister();
@@ -650,7 +711,6 @@ void traverseAndGenerate(ParseTreeNode*root){
 	}
 
 	if(rule=="simple_expression : simple_expression ADDOP term"){
-
 		traverseAndGenerate(root->children[0]);
 
 		assemblyFile<<push(root->children[0]->addr);
@@ -676,6 +736,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 		root->addr = dest ; 
 
 		assemblyFile<<code ;
+
 
 		return ;
 	}
@@ -721,17 +782,19 @@ void traverseAndGenerate(ParseTreeNode*root){
 		root->label = ParseTreeNode::getLabel();
 		writeLabel(root->label);
 
-		traverseAndGenerate(root->children[0]);
 		traverseAndGenerate(root->children[2]);
+		assemblyFile<<push(root->children[2]->addr);
+		reg.resetRegister(root->children[2]->addr);
 
+		traverseAndGenerate(root->children[0]);
 
+		string src = reg.getRegister();
+		assemblyFile<<pop(src);
+		reg.resetRegister(root->children[2]->addr);
 
-		string src = root->children[2]->addr ;
 		string dest = root->children[0]->addr ;
 
-		string code="\tMOV "+dest+","+src+"\n" ;
-
-		assemblyFile<<code;
+		assemblyFile<<mov(dest,src);
 
 		root->addr = dest ;
 
@@ -945,7 +1008,7 @@ print_output proc  ;print what is in ax\n\
 }
 
 void codeGenerator(ParseTreeNode*root){
-
+	cout<<"parsing complete,generating assembly\n";
      genStartingCode();
 
 	 offset = 0 ;
@@ -1187,6 +1250,8 @@ start : program
 		$$ = new ParseTreeNode("start");
 		$$->addChild($1);
 		printParseTree($$,0);
+		parseFile.close();
+
 		codeGenerator($$);
 	}
 	;
