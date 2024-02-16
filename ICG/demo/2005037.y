@@ -204,6 +204,29 @@ void traverseAndGenerate(ParseTreeNode*root){
 		return;
 	}
 
+	if(rule=="declaration_list : declaration_list COMMA ID LSQUARE CONST_INT RSQUARE"){
+		traverseAndGenerate(root->children[0]);
+
+		if(symbolTable.isCurrentScopeGlobal()){
+			//already in the symbol table
+			return ;
+		}
+
+		cout<<"gotcha segfault local arr\n";
+		string lexeme = root->children[2]->lexeme ;
+		int size = atoi(root->children[4]->lexeme.c_str());
+
+		assemblyFile<<sub("SP",to_string(2*size));
+
+		offset += 2*size ;
+		cout<<"arr offset "<<offset<<endl;
+
+		symbolTable.insert(lexeme,"ID","INT",size,false,offset);	
+		
+
+		return;
+	}
+
 	if(rule=="declaration_list : ID LSQUARE CONST_INT RSQUARE"){
 		
 		if(symbolTable.isCurrentScopeGlobal()){
@@ -706,6 +729,7 @@ void traverseAndGenerate(ParseTreeNode*root){
 			operation= "MUL" ;
 		}else{
 			operation = "DIV" ;
+			assemblyFile<<"\tXOR DX,DX\n" ;
 		}
 
 

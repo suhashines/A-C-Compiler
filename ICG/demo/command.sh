@@ -19,4 +19,4 @@ echo 'Generated the scanner object file'
 # Link all object files to generate the executable
 g++ y.o l.o -lfl -o 2005037
 echo 'All ready, running'
-./2005037 input.txt
+./2005037 input.c
