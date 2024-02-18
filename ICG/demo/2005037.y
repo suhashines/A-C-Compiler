@@ -164,6 +164,27 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 	string rule = root->name+" :"+root->nameList ;
 
+
+	if(rule=="unary_expression : NOT unary_expression"){
+		traverseAndGenerate(root->children[1]);
+		string addr = root->children[1]->addr ;
+
+		cout<<"got address :"<<addr<<"\n";
+
+		assemblyFile<<push(addr);
+		reg.resetRegister(addr);
+
+		string dest = reg.getRegister();
+
+		assemblyFile<<pop(dest);
+
+		assemblyFile<<"\tNOT "<<dest<<"\n";
+
+		root->addr = dest ;
+
+		return;
+	}
+
 	if(rule=="factor : LPAREN expression RPAREN"){
 		cout<<"gotcha complex inside if\n";
 		traverseAndGenerate(root->children[1]);
@@ -282,18 +303,12 @@ void traverseAndGenerate(ParseTreeNode*root){
 	if(rule=="statement : RETURN expression SEMICOLON"){
 		
 		traverseAndGenerate(root->children[1]);
-		string dest = reg.getRegister();
 
-		if(dest!="CX"){
-			reg.resetRegister(dest);
-			dest = "CX" ;
-		}
-
-		assemblyFile<<mov(dest,root->children[1]->addr);
+		assemblyFile<<mov("CX",root->children[1]->addr);
 		reg.resetRegister(root->children[1]->addr);
 
 		assemblyFile<<jump("jmp",returnLabel);
-		returnAddr = dest ;
+		returnAddr = "CX" ;
 
 		return;
 	}
@@ -367,7 +382,9 @@ void traverseAndGenerate(ParseTreeNode*root){
 
 		SymbolInfo *info = symbolTable.lookup(func_name);
 
-		root->addr = info->returnAddr ;
+		//root->addr = info->returnAddr ;
+
+		root->addr = "CX" ;
 
 		cout<<root->addr<<" got func reg\n";
 
