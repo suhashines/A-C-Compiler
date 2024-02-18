@@ -113,9 +113,9 @@ for(const string & vars: symbolTable.globalVariables){
 	ds+= " DUP (0000H)\n" ;
 }
 
-assemblyFile<<ds ;
+   assemblyFile<<ds ;
 
-assemblyFile<<".CODE\n" ;
+   assemblyFile<<".CODE\n" ;
 
 }
 

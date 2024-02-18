@@ -20,3 +20,6 @@ echo 'Generated the scanner object file'
 g++ y.o l.o -lfl -o 2005037
 echo 'All ready, running'
 ./2005037 input.c
+echo 'Generating optimal assembly'
+g++ -o optimizer.o 2005037_optimizer.cpp
+./optimizer.o
