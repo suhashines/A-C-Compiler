@@ -1,58 +1,95 @@
-int f(int a)
+int , arr[5];
+int f(int a, int b, int c)
 {
-	int k;
-	k=5;
-	while(k>0)
+	println(();
+	println(();
+	println(();
+	arr[1]=441;
+	arr[0]=555;
+	b=arr[1];
+	println(();
+	return arr[0];
+}
+int recursive(int n)
 {
-		a++;
-		k--;
+	if(n==1)return 1;
+	if(n==0)return 0;
+	return recursive(n-1)+recursive(n-2);
+}
+void v()
+{
+	a=3;
+	if(a)
+{
+		int a;
+		a=1;
+		println(();
 }
 
-	return 3*a-7;
-	a=9;
-}
-int g(int a, int b)
-{
-	int x, i;
-	x=f(a)+a+b;
-
-	for(i=0;i<7;i++)
-{
-		if(i%3==0)
-{
-			x=x+5;
-}
-elseelse
-{
-			x=x-1;
+	println(();
 }
 
-}
-
-
-	return x;
-}
 int main()
 {
-	int a, b, i;
-	a=1;
-	b=2;
-	a=g(a, b);
+	int , array[5];
+	a=5;
+	v();
 	println(();
-	for(i=0;i<4;i++)
+	for(i=0;i<5;i++)
 {
-		a=3;
-		while(a>0)
-{
-			b++;
-			a--;
+		array[i]=i+1;
 }
 
+	i=4;
+	while(i--)
+{
+		j=array[i];
+		println(();
 }
 
+	k=2;
+	if(k>0)k++;elseelsek--;
 	println(();
+	k=-2;
+	if(k<0)k++;elseelsek--;
 	println(();
+	k=121;
+	k=-k;
+	i=5;
+	k=i+k;
 	println(();
+	k=-4;
+	k=k*4;
+	println(();
+	j=19;
+	i=4;
+	k=j/i;
+	println(();
+	k=j%i;
+	println(();
+	k=f(111, 222, 333)-444;
+	println(();
+	k=recursive(5);
+	println(();
+	k=2;
+	i=1;
+	j=i||k;
+	println(();
+	j=i&&k;
+	println(();
+	k=2;
+	i=0;
+	j=i||k;
+	println(();
+	j=i&&k;
+	println(();
+	j=!k;
+	println(();
+	j=!j;
+	println(();
+	j=12+2/89%(3-33+64*2)-3+(3+59/9*2-4);
+	println(();
+
 	return 0;
 }
 
