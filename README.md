@@ -1,1 +1,1 @@
-So far Symbol Table and Lexical Analyzer has been built. Now we're going to build the Syntax Analyzer.
+The repository provides the implementation of a C-compiler made using cpp,flex and bison. The input to the compiler is a c file and the output is an optimized assembly code. This code can later be run into emu8086 microprocessor.
